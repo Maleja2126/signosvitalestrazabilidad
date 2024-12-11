@@ -94,7 +94,7 @@ const EditPatientDataForm = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+    
         const token = localStorage.getItem("token");
         console.log("Datos a enviar:", formData); // Verifica los datos
         console.log("Token:", token); // Verifica el token
@@ -110,10 +110,15 @@ const EditPatientDataForm = () => {
             navigate(`/patient/${formData.id_paciente}/records`);
         } catch (error) {
             console.error("Error al actualizar el registro:", error);
-            toast.error("Error al actualizar el registro.");
-        }
-    };
     
+            // Mostrar el mensaje específico del backend si está disponible
+            if (error.response && error.response.data && error.response.data.message) {
+                toast.error(error.response.data.message);
+            } else {
+                toast.error("Error al actualizar el registro.");
+            }
+        }
+    }; // Aquí cerramos correctamente la función handleSubmit
 
     return (
         <div className="flex flex-col items-center min-h-screen bg-gray-100 p-4 overflow-auto">

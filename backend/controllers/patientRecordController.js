@@ -216,7 +216,36 @@ exports.updatePatientRecord = async (req, res) => {
         return res.status(401).json({ message: "Usuario no autorizado para realizar esta acción" });
     }
 
+    if (!updatedData.created_at) {
+        updatedData.created_at = formatDateForMySQL(new Date()); // Generar si no está presente
+    } else {
+        updatedData.created_at = formatDateForMySQL(updatedData.created_at);
+    }
+
     updatedData.responsable_signos = responsable_signos;
+
+    // Validaciones de datos
+    if (updatedData.talla > 250) {
+        return res.status(400).json({ message: "La altura excede el valor máximo realista" });
+    }
+    if (updatedData.pulso > 200 || updatedData.pulso < 40) {
+        return res.status(400).json({ message: "Valor de pulso fuera de rango" });
+    }
+    if (updatedData.frecuencia_respiratoria > 70 || updatedData.frecuencia_respiratoria < 10) {
+        return res.status(400).json({ message: "Frecuencia respiratoria demasiado alta o baja" });
+    }
+    if (updatedData.saturacion_oxigeno > 100 || updatedData.saturacion_oxigeno < 50) {
+        return res.status(400).json({ message: "La saturación de oxígeno no puede superar el 100% o ser menor de 50%" });
+    }
+    if (updatedData.presion_sistolica > 190 || updatedData.presion_sistolica < 50) {
+        return res.status(400).json({ message: "La presión arterial sistólica es demasiado alta o baja" });
+    }
+    if (updatedData.presion_diastolica > 130 || updatedData.presion_diastolica < 40) {
+        return res.status(400).json({ message: "La presión arterial diastólica es demasiado alta o baja" });
+    }
+    if (updatedData.temperatura > 55 || updatedData.temperatura < 15) {
+        return res.status(400).json({ message: "La temperatura es demasiado alta o baja" });
+    }
 
     try {
         // Obtener información del registro y paciente
@@ -278,6 +307,36 @@ exports.updatePatientRecord = async (req, res) => {
                 "Signos Vitales",
             ]
         );
+
+        // Crear el objeto para insertar en `historial_signos_pacientes`
+        const historial = {
+            id_paciente: updatedData.id_paciente, // Usar el id del paciente del nuevo registro
+            id_registro: idRegistro, // El mismo id de registro
+            record_date: updatedData.record_date,
+            record_time: updatedData.record_time,
+            presion_sistolica: updatedData.presion_sistolica,
+            presion_diastolica: updatedData.presion_diastolica,
+            presion_media: updatedData.presion_media,
+            pulso: updatedData.pulso,
+            temperatura: updatedData.temperatura,
+            frecuencia_respiratoria: updatedData.frecuencia_respiratoria,
+            saturacion_oxigeno: updatedData.saturacion_oxigeno,
+            peso_adulto: updatedData.peso_adulto,
+            peso_pediatrico: updatedData.peso_pediatrico,
+            talla: updatedData.talla,
+            observaciones: updatedData.observaciones,
+            responsable_signos: updatedData.responsable_signos,
+        };
+
+        console.log("Datos a insertar en historial_signos_pacientes:", historial);
+
+        // Insertar los nuevos datos en `historial_signos_pacientes`
+        const historialResult = await db.query("INSERT INTO historial_signos_pacientes SET ?", [historial]);
+
+        // Verificar si la inserción fue exitosa
+        if (!historialResult || historialResult.affectedRows === 0) {
+            return res.status(500).json({ message: "Error al registrar el historial de signos vitales" });
+        }
 
         res.json({ message: "Registro actualizado correctamente y registrado en el historial y trazabilidad." });
     } catch (error) {
