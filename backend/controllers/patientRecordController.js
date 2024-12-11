@@ -190,7 +190,8 @@ exports.getPatientRecord = async (req, res) => {
     if (!req.user || !req.user.username) {
         return res.status(401).json({ message: "Usuario no autenticado o no autorizado" });
     }
-
+    
+    console.log("ID recibido en el backend:", idRegistro); // Log para depuración
     try {
         const [record] = await db.query("SELECT * FROM registros_paciente WHERE id = ?", [idRegistro]);
 

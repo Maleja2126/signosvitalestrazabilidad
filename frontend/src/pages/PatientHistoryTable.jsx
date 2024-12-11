@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { fetchPatientHistory, fetchPatientInfo, fetchPatientHistoryRecords } from "../services/patientService";
 import { useParams, useNavigate } from "react-router-dom";
-import { FiPlusCircle, FiHome, FiFilter, FiDownload, FiEdit } from "react-icons/fi";
+import { FiPlusCircle, FiHome, FiX, FiDownload, FiEdit } from "react-icons/fi";
 import "jspdf-autotable";
 import { generatePatientPDF } from "../services/generatePatientPDF";
 
@@ -87,14 +87,25 @@ const PatientHistoryPage = ({ token }) => {
 
     const handleFilterHistory = () => {
         let filtered = history;
-        if (startDate) {
-            filtered = filtered.filter(record => new Date(record.created_at) >= new Date(startDate));
-        }
-        if (endDate) {
-            filtered = filtered.filter(record => new Date(record.created_at) <= new Date(endDate));
-        }
+    
+        // Convertir fechas de inicio y fin a formato UTC para comparación
+        const start = startDate ? new Date(startDate).setHours(0, 0, 0, 0) : null;
+        const end = endDate ? new Date(endDate).setHours(23, 59, 59, 999) : null;
+    
+        // Aplicar el filtro
+        filtered = filtered.filter(record => {
+            // Convertir la fecha del registro a UTC
+            const recordDate = new Date(record.created_at).getTime();
+    
+            // Comparar con los rangos de fechas ajustados
+            return (
+                (!start || recordDate >= start) &&
+                (!end || recordDate <= end)
+            );
+        });
+    
         setFilteredHistory(filtered);
-    };
+    };    
 
     const handleSearchIdChange = (e) => {
         const value = e.target.value.trim();
@@ -159,7 +170,7 @@ const PatientHistoryPage = ({ token }) => {
 
     const exportPDF = () => {
         const selectedRecords = filteredPatientHistory.filter(record => selectedIds.has(record.id_registro));
-        generatePatientPDF(patientInfo, selectedRecords,filteredHistory,filteredPatientHistory,selectedIds); // Generar PDF solo con los seleccionados
+        generatePatientPDF(patientInfo, selectedRecords, filteredHistory, filteredPatientHistory, selectedIds); // Generar PDF solo con los seleccionados
     };
     const isPediatric = patientInfo && patientInfo.age_group !== "Adulto";
 
@@ -167,26 +178,43 @@ const PatientHistoryPage = ({ token }) => {
     if (error) return <div className="text-red-500">{error}</div>;
 
     return (
-        <div className="flex flex-col items-center min-h-screen bg-gray-100 p-10 overflow-auto">
+        <div className="flex flex-col items-center min-h-screen bg-gray-100 p-12 overflow-auto">
             <h1 className="text-3xl font-bold mb-8">Trazabilidad del paciente </h1>
             {/* Contenedor para capturar en PDF */}
             <div id="pdf-content">
-                {/* Filtros para el historial de cambios del paciente */}
-                <div className="mb-4">
+
+                {/* Botones para filtros */}
+                <div className="flex items-center space-x-4 mb-4">
                     <input
                         type="date"
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
-                        className="mr-2 p-2 border rounded"
+                        className="p-2 border rounded"
                     />
                     <input
                         type="date"
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
-                        className="mr-2 p-2 border rounded"
+                        className="p-2 border rounded"
                     />
-                    <button onClick={handleFilterHistory} className="p-2 bg-blue-500 text-white rounded">Filtrar por Fecha</button>
+                    <button
+                        onClick={handleFilterHistory}
+                        className="px-4 py-2 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600 transition"
+                    >
+                        Filtrar por Fecha
+                    </button>
+                    <button
+                        onClick={() => {
+                            setStartDate("");
+                            setEndDate("");
+                            setFilteredHistory(history); // Restaura el historial completo
+                        }}
+                        className="px-4 py-2 bg-gray-300 text-gray-700 font-semibold rounded hover:bg-gray-400 transition"
+                    >
+                        Limpiar Filtros
+                    </button>
                 </div>
+
                 {/* Historial del Paciente */}
                 <div className="bg-white p-6 rounded shadow-lg w-full max-w-7xl mb-6 overflow-x-auto">
                     <h2 className="text-lg font-bold mb-4">Historial de cambios del paciente</h2>
@@ -291,12 +319,12 @@ const PatientHistoryPage = ({ token }) => {
 
                                         <tr key={currentRecord.id_registro} className="text-center">
                                             <td className="p-3 border">
-                                            <input 
-                                                type="checkbox" 
-                                                checked={selectedIds.has(currentRecord.id_registro)} 
-                                                onChange={() => handleSelectRecord(currentRecord.id_registro)} 
-                                            />
-                                        </td>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedIds.has(currentRecord.id_registro)}
+                                                    onChange={() => handleSelectRecord(currentRecord.id_registro)}
+                                                />
+                                            </td>
                                             <td className="p-3 border">{currentRecord.id_registro}</td>
                                             <td className="p-3 border">{formatDate(currentRecord.record_date)}</td>
                                             <td className="p-3 border">{currentRecord.record_time}</td>
@@ -326,22 +354,44 @@ const PatientHistoryPage = ({ token }) => {
 
                     )}
                 </div>
-{/* Botones de acción */}
-<div className="flex justify-center w-full max-w-7xl mt-4 space-x-2">
-  <button
-    onClick={handleGoBack}
-    className="flex items-center px-4 py-2 bg-blue-500 text-white font-bold rounded hover:bg-blue-600 transition"
-  >
-    <FiHome className="mr-2" /> Regresar
-  </button>
-  <button
-    onClick={exportPDF}
-    className="flex items-center px-4 py-2 bg-green-500 text-white font-bold rounded hover:bg-green-600 transition"
-  >
-    <FiDownload className="mr-2" /> Exportar PDF
-  </button>
-</div>
 
+                {/* Botones de acción */}
+                <div className="flex justify-center w-full max-w-7xl mt-6 space-x-4">
+                    {/* Botón de regresar */}
+                    <button
+                        onClick={handleGoBack}
+                        className="flex items-center px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition"
+                    >
+                        <FiHome className="mr-2" /> Regresar
+                    </button>
+
+                    {/* Botón de quitar selecciones */}
+                    <button
+                        onClick={() => setSelectedIds(new Set())} // Limpia todas las selecciones
+                        className="flex items-center px-6 py-3 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition"
+                    >
+                        <FiX className="mr-2" /> Quitar Selecciones
+                    </button>
+
+                    {/* Botón de seleccionar todo */}
+                    <button
+                        onClick={() => {
+                            const allIds = new Set(filteredPatientHistory.map(record => record.id_registro));
+                            setSelectedIds(allIds); // Selecciona todos los registros visibles
+                        }}
+                        className="flex items-center px-6 py-3 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600 transition"
+                    >
+                        <FiPlusCircle className="mr-2" /> Seleccionar Todo
+                    </button>
+
+                    {/* Botón de exportar PDF */}
+                    <button
+                        onClick={exportPDF}
+                        className="flex items-center px-6 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition"
+                    >
+                        <FiDownload className="mr-2" /> Exportar PDF
+                    </button>
+                </div>
             </div>
         </div>
     );

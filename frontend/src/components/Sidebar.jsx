@@ -47,7 +47,8 @@ const Sidebar = () => {
     };
 
     return (
-        <div className={`fixed top-0 left-0 h-full bg-white text-black transition-all duration-300 ${isOpen ? 'w-64' : 'w-16'} shadow-lg`}>
+            <div className={`fixed top-0 left-0 h-full bg-white text-black transition-all duration-300 ${isOpen ? 'w-68' : 'w-16'} shadow-lg z-50`}>
+
             {/* Botón para abrir/cerrar Sidebar */}
             <button
                 onClick={() => setIsOpen(!isOpen)} // Al hacer clic cambia el estado de isOpen, abriendo o cerrando el sidebar
