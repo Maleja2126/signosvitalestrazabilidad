@@ -297,9 +297,9 @@ const PatientRecordHistory = () => {
         return <div className="flex justify-center items-center h-screen">Cargando...</div>;
     }
     return (
-        <div className="flex flex-col items-center min-h-screen bg-gray-100 p-6 overflow-auto">
-            <h1 className="text-2xl font-bold mb-6">Registro del Paciente</h1>
-            <div className="bg-white p-4 rounded shadow-lg w-full max-w-7xl mb-6 overflow-x-auto" ref={tableRef}>
+        <div className="flex flex-col items-center min-h-screen bg-gray-100 p-9 overflow-auto">
+            <h1 className="text-4xl font-bold mb-9">Historial del Paciente</h1>
+            <div className="bg-white p-4 rounded shadow-lg w-full max-w-7xl mb-8 overflow-x-auto" ref={tableRef}>
                 {/* Información del paciente */}
                 <div className="flex justify-between mb-4">
 

@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
-import { FaInfoCircle, FaSearch } from "react-icons/fa";
+import { FaSearch, FaInfoCircle, FaCheck, FaTimes, FaFileExport, FaListAlt, FaFilter, FaArrowLeft } from "react-icons/fa"
 import DetalleTrazabilidadModal from "../components/DetalleTrazabilidadModal";
-import generatePDFTrazabilidad from "../services/generatePDFTrazabilidad"; 
+import generatePDFTrazabilidad from "../services/generatePDFTrazabilidad";
+import { useNavigate } from "react-router-dom";
 
 const TrazabilidadPage = () => {
   const [trazabilidad, setTrazabilidad] = useState([]);
@@ -12,26 +13,28 @@ const TrazabilidadPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Estados para el formulario de exportación
-  const [selectedUsuarioNombre, setSelectedUsuarioNombre] = useState("");
+  const [selectedActions, setSelectedActions] = useState({});
   const [fechaInicio, setFechaInicio] = useState("");
   const [fechaFin, setFechaFin] = useState("");
-
+  const [mensajeSeleccion, setMensajeSeleccion] = useState("");
+  const [generatingPDF, setGeneratingPDF] = useState(false);
+  const navigate = useNavigate();
+  
   useEffect(() => {
     const fetchTrazabilidad = async () => {
       setLoading(true);
       try {
         const response = await axios.get("http://localhost:5000/api/traceability");
+        console.log("Datos recibidos:", response.data);
         const data = response.data;
 
         if (data.records && data.records.length > 0) {
           setTrazabilidad(data.records);
           setFilteredTrazabilidad(data.records);
-          setError(null); // Limpia errores previos
+          setError(null);
         } else {
           setTrazabilidad([]);
-          setError(null); // No hay registros, pero no es un error
+          setError(null);
         }
       } catch (error) {
         console.error("Error al cargar los registros de trazabilidad:", error);
@@ -44,82 +47,121 @@ const TrazabilidadPage = () => {
     fetchTrazabilidad();
   }, []);
 
-  const handleSearch = (query) => {
-    setSearchQuery(query);
-    if (query === "") {
-      setFilteredTrazabilidad(trazabilidad);
-    } else {
-      const lowerCaseQuery = query.toLowerCase();
-      setFilteredTrazabilidad(
-        trazabilidad.filter((item) =>
-          item.usuario_nombre.toLowerCase().includes(lowerCaseQuery)
-        )
-      );
-    }
-  };
+  const handleSearch = () => {
+    const filteredByDates = trazabilidad.filter((item) => {
+      const itemDate = new Date(item.fecha_hora);
+      const startDate = fechaInicio ? new Date(`${fechaInicio}T00:00:00`) : null;
+      const endDate = fechaFin ? new Date(`${fechaFin}T23:59:59`) : null;
 
-  const handleViewDetails = (id) => {
-    setSelectedTrazabilidadId(id);
-    setIsModalOpen(true);
-  };
+      // Verificar si la fecha del registro está dentro del rango, si las fechas están definidas
+      const isWithinDateRange =
+        (!startDate || itemDate >= startDate) &&
+        (!endDate || itemDate <= endDate);
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedTrazabilidadId(null);
-  };
-
-  const handleExportarPDF = () => {
-    if (!selectedUsuarioNombre || !fechaInicio || !fechaFin) {
-        alert("Por favor selecciona un usuario y un rango de fechas.");
-        return;
-    }
-
-    console.log("Usuario Seleccionado:", selectedUsuarioNombre);
-    console.log("Rango de Fechas Seleccionado:", fechaInicio, fechaFin);
-
-    const usuarioInfo = {
-        id: selectedUsuarioNombre,
-        nombre: filteredTrazabilidad.find((item) => item.usuario_nombre === selectedUsuarioNombre)?.usuario_nombre || "Usuario desconocido",
-        fechaInicio,
-        fechaFin,
-    };
-
-    // Ajustar rango de fechas para incluir todo el día correctamente
-    const inicio = new Date(`${fechaInicio}T00:00:00`);
-    const fin = new Date(`${fechaFin}T23:59:59`);
-
-    console.log("Rango Ajustado - Inicio:", inicio, "Fin:", fin);
-
-    const accionesFiltradas = trazabilidad.filter((accion) => {
-        const fechaAccion = new Date(accion.fecha_hora);
-
-        console.log("Evaluando acción:", accion);
-        console.log("Fecha de acción:", fechaAccion);
-
-        return (
-            accion.usuario_nombre.toLowerCase().trim() === selectedUsuarioNombre.toLowerCase().trim() &&
-            fechaAccion >= inicio &&
-            fechaAccion <= fin
-        );
+      return isWithinDateRange;
     });
 
-    console.log("Acciones Filtradas:", accionesFiltradas);
+    const filteredByUserAndDates = filteredByDates.filter((item) =>
+      searchQuery
+        ? item.usuario_nombre.toLowerCase().includes(searchQuery.toLowerCase())
+        : true
+    );
 
-    if (accionesFiltradas.length === 0) {
-        alert(`No se encontraron registros para el usuario ${selectedUsuarioNombre} entre ${fechaInicio} y ${fechaFin}.`);
-        return;
+    setFilteredTrazabilidad(filteredByUserAndDates);
+  };
+
+  const handleSelectAction = (userName, actionId) => {
+    setSelectedActions((prev) => {
+      const userActions = prev[userName] || [];
+      if (userActions.includes(actionId)) {
+        return {
+          ...prev,
+          [userName]: userActions.filter((id) => id !== actionId),
+        };
+      } else {
+        return {
+          ...prev,
+          [userName]: [...userActions, actionId],
+        };
+      }
+    });
+  };
+
+  const handleSelectAllFiltered = () => {
+    const allFiltered = {};
+    filteredTrazabilidad.forEach((item) => {
+      if (!allFiltered[item.usuario_nombre]) {
+        allFiltered[item.usuario_nombre] = [];
+      }
+      allFiltered[item.usuario_nombre].push(item.id);
+    });
+    setSelectedActions(allFiltered);
+    setMensajeSeleccion("Todas las acciones visibles han sido seleccionadas.");
+    setTimeout(() => setMensajeSeleccion(""), 3000);
+  };
+
+  const handleDeselectAll = () => {
+    setSelectedActions({});
+    setMensajeSeleccion("Se han deseleccionado todas las acciones.");
+    setTimeout(() => setMensajeSeleccion(""), 3000);
+  };
+
+  const handleExportarPDF = async (exportarTodo = false) => {
+    setGeneratingPDF(true);
+
+    let selectedData;
+    if (exportarTodo) {
+      selectedData = trazabilidad;
+    } else {
+      selectedData = Object.entries(selectedActions).flatMap(([userName, actionIds]) =>
+        trazabilidad.filter((item) => actionIds.includes(item.id))
+      );
     }
 
-    generatePDFTrazabilidad(usuarioInfo, accionesFiltradas);
-};
+    if (selectedData.length === 0) {
+      alert("No hay registros para exportar.");
+      setGeneratingPDF(false);
+      return;
+    }
 
+    // Obtener el rango de fechas de los datos seleccionados
+    const fechas = selectedData.map((item) => new Date(item.fecha_hora));
+    const fechaInicioRango = new Date(Math.min(...fechas)); // Fecha mínima
+    const fechaFinRango = new Date(Math.max(...fechas)); // Fecha máxima
+
+    // Obtener el nombre del usuario
+    const usuarioNombre = selectedData[0]?.usuario_nombre || "Desconocido";
+
+    try {
+      await generatePDFTrazabilidad(
+        {
+          nombre: usuarioNombre,
+          fechaInicio: fechaInicioRango.toISOString(),
+          fechaFin: fechaFinRango.toISOString(),
+        },
+        selectedData
+      );
+      alert("PDF generado exitosamente.");
+    } catch (error) {
+      alert("Hubo un error al generar el PDF.");
+    } finally {
+      setGeneratingPDF(false);
+    }
+  };
+
+  const handleClearFilters = () => {
+    setFechaInicio(""); // Restablecer campo de fecha inicio
+    setFechaFin("");    // Restablecer campo de fecha fin
+    setSearchQuery(""); // Restablecer campo de búsqueda
+    setFilteredTrazabilidad(trazabilidad); // Mostrar todos los registros
+  };
   const actionStyles = {
-    Creación: { text: "text-green-600", dot: "bg-green-600" },
-    "Actualización de datos del paciente": { text: "text-yellow-600", dot: "bg-yellow-600" },
-    "Cambio de estado del paciente": { text: "text-blue-900", dot: "bg-blue-900" },
-    "Nuevo registro de Signos Vitales": { text: "text-pink-600", dot: "bg-pink-600" },
-    "Actualización de Signos Vitales": { text: "text-purple-500", dot: "bg-purple-500" },
-    "Descarga de PDF": { text: "text-red-600", dot: "bg-red-600" },
+    Creación: { text: "text-green-600 font-bold", dot: "bg-green-600" },
+    "Actualización de datos del paciente": { text: "text-yellow-600 font-bold", dot: "bg-yellow-600" },
+    "Cambio de estado del paciente": { text: "text-blue-900 font-bold", dot: "bg-blue-900" },
+    "Nuevo registro de Signos Vitales": { text: "text-pink-600 font-bold", dot: "bg-pink-600" },
+    "Actualización de Signos Vitales": { text: "text-purple-500 font-bold", dot: "bg-purple-500" },
+    "Descarga de PDF": { text: "text-red-600 font-bold", dot: "bg-red-600" },
   };
 
   const getActionStyle = (action) => actionStyles[action]?.text || "text-gray-600";
@@ -128,129 +170,192 @@ const TrazabilidadPage = () => {
   return (
     <div className="trazabilidad-page bg-gray-100 min-h-screen flex flex-col items-center p-12">
       <div className="w-full max-w-6xl">
-        <div className="mb-9 text-center">
-          <h1 className="text-4xl font-bold text-blue-600 mb-8">Trazabilidad de Usuarios</h1>
-          <div className="relative w-1/2 mx-auto">
-            <span className="absolute inset-y-0 left-3 flex items-center pointer-events-none opacity-50">
-              <FaSearch className="text-gray-500" />
-            </span>
-            <input
-              type="text"
-              placeholder="Buscar por usuario..."
-              className="border border-gray-300 p-3 pl-10 rounded w-full focus:ring-0 focus:outline-none"
-              value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
-            />
-          </div>
-        </div>
+        <div className="mb-6 text-center">
+          <div className="flex flex-col items-center space-y-6">
+            <h1 className="text-4xl font-bold text-blue-600">Trazabilidad de Usuarios</h1>
 
-        {/* Formulario de exportación */}
-        <div className="bg-white p-6 shadow-lg rounded-lg mb-6">
-          <h2 className="text-2xl font-bold text-gray-700 mb-4">Exportar Trazabilidad</h2>
-          <div className="grid grid-cols-3 gap-4">
-            <input
-              type="text"
-              placeholder="Nombre del usuario"
-              className="border border-gray-300 p-3 rounded"
-              value={selectedUsuarioNombre}
-              onChange={(e) => setSelectedUsuarioNombre(e.target.value)}
-            />
-            <input
-              type="date"
-              className="border border-gray-300 p-3 rounded"
-              value={fechaInicio}
-              onChange={(e) => setFechaInicio(e.target.value)}
-            />
-            <input
-              type="date"
-              className="border border-gray-300 p-3 rounded"
-              value={fechaFin}
-              onChange={(e) => setFechaFin(e.target.value)}
-            />
-          </div>
-          <button
-            className="bg-blue-500 text-white px-6 py-2 mt-4 rounded hover:bg-blue-600 transition"
-            onClick={handleExportarPDF}
-          >
-            Exportar PDF
-          </button>
-        </div>
-
-        <div className="overflow-x-auto bg-white shadow-lg rounded-lg">
-          {loading && <p className="text-center text-blue-500 py-4">Cargando registros...</p>}
-          {error && <p className="text-center text-red-500 py-4">{error}</p>}
-          {filteredTrazabilidad.length > 0 ? (
-            <table className="table-auto w-full border-collapse bg-white text-center">
-              <thead>
-                <tr className="bg-blue-600 text-white text-center">
-                  <th className="p-4">Usuario</th>
-                  <th className="p-4">Acción</th>
-                  <th className="p-4">Fecha - Hora</th>
-                  <th className="p-4">Detalles</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredTrazabilidad.map((item, index) => (
-                  <tr
-                    key={item.id}
-                    className={`${
-                      index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                    } hover:bg-blue-100 text-center transition-all`}
-                  >
-                    <td className="p-5 text-center">{item.usuario_nombre}</td>
-                    <td
-                      className={`p-4 font-semibold flex items-center justify-center space-x-2 ${getActionStyle(
-                        item.accion
-                      )}`}
-                      title={`Acción: ${item.accion}`}
-                    >
-                      <span
-                        className={`inline-block w-3 h-3 rounded-full ${getDotStyle(item.accion)}`}
-                      ></span>
-                      <span>{item.accion}</span>
-                    </td>
-                    <td className="p-5 text-center">
-                      {new Date(item.fecha_hora).toLocaleString()}
-                    </td>
-                    <td className="p-5 text-center">
-                      <button
-                        className="bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-600 transition flex items-center justify-center mx-auto"
-                        onClick={() => handleViewDetails(item.id)}
-                      >
-                        <FaInfoCircle className="mr-2" /> Ver detalles
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            !loading &&
-            !error &&
-            trazabilidad?.length === 0 && (
-              <div className="text-center py-12 flex flex-col items-center bg-white p-6 rounded-lg shadow-md">
-                <p className="text-red-500 text-lg font-semibold flex items-center">
-                  <span role="img" aria-label="alert" className="mr-2">
-                    🚫
-                  </span>
-                  No hay registros de trazabilidad disponibles.
-                </p>
-                <p className="text-gray-400 text-sm mt-2">
-                  Verifica el usuario o intenta realizar una nueva búsqueda.
-                </p>
+            <div className="grid grid-cols-3 gap-4 items-center mb-6">
+              <input
+                type="date"
+                className="border border-gray-300 p-3 rounded w-full"
+                placeholder="dd/mm/aaaa"
+                value={fechaInicio}
+                onChange={(e) => setFechaInicio(e.target.value)}
+              />
+              <input
+                type="date"
+                className="border border-gray-300 p-3 rounded w-full"
+                placeholder="dd/mm/aaaa"
+                value={fechaFin}
+                onChange={(e) => setFechaFin(e.target.value)}
+              />
+              <div className="relative w-full">
+                <span className="absolute inset-y-0 left-3 flex items-center text-gray-500">
+                  <FaSearch />
+                </span>
+                <input
+                  type="text"
+                  placeholder="Buscar por usuario..."
+                  className="border border-gray-300 p-3 pl-10 rounded w-full"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
               </div>
-            )
-          )}
-        </div>
+            </div>
 
-        <DetalleTrazabilidadModal
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-          trazabilidadId={selectedTrazabilidadId}
-        />
+            <div className="flex space-x-4 justify-start">
+              <button
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition flex items-center space-x-2"
+                onClick={handleSearch}
+              >
+                <FaFilter className="text-sm" />
+                <span>Filtrar</span>
+              </button>
+              <button
+                className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 transition flex items-center space-x-2"
+                onClick={handleClearFilters}
+              >
+                <FaTimes className="text-sm" />
+                <span>Limpiar Filtros</span>
+              </button>
+            </div>
+
+            <div className="overflow-x-auto bg-white shadow-lg rounded-lg">
+              {loading && <p className="text-center text-blue-500 py-4">Cargando registros...</p>}
+              {error && <p className="text-center text-red-500 py-4">{error}</p>}
+              {filteredTrazabilidad.length > 0 ? (
+                <table className="table-auto w-full border-collapse bg-white text-center">
+                  <thead>
+                    <tr className="bg-blue-600 text-white">
+                      <th className="p-4">Seleccionar</th>
+                      <th className="p-4">Usuario</th>
+                      <th className="p-4">Acción</th>
+                      <th className="p-4">Fecha - Hora</th>
+                      <th className="p-4">Detalles</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredTrazabilidad.map((item, index) => (
+                      <tr
+                        key={item.id}
+                        className={`${selectedActions[item.usuario_nombre]?.includes(item.id)
+                          ? "bg-blue-100"
+                          : index % 2 === 0
+                            ? "bg-white"
+                            : "bg-gray-50"
+                          } hover:bg-blue-100`}
+                      >
+                        <td className="p-5 text-center align-middle">
+                          <input
+                            type="checkbox"
+                            checked={selectedActions[item.usuario_nombre]?.includes(item.id)}
+                            onChange={() => handleSelectAction(item.usuario_nombre, item.id)}
+                          />
+                        </td>
+                        <td className="p-5 py-3 text-center align-middle">{item.usuario_nombre}</td>
+                        <td
+                          className={`p-5 text-center align-middle flex items-center justify-center space-x-2 ${getActionStyle(
+                            item.accion
+                          )}`}
+                        >
+                          <span
+                            className={`inline-block w-3 h-3 rounded-full ${getDotStyle(item.accion)}`}
+                          ></span>
+                          <span>{item.accion}</span>
+                        </td>
+
+                        <td className="p-5 text-center align-middle">{new Date(item.fecha_hora).toLocaleString()}</td>
+                        <td className="p-5 text-center align-middle">
+                          <button
+                            className="bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-600 transition"
+                            onClick={() => {
+                              setSelectedTrazabilidadId(item.id);
+                              setIsModalOpen(true);
+                            }}
+                          >
+                            <FaInfoCircle className="inline mr-2" /> Ver detalles
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                !loading &&
+                !error &&
+                trazabilidad.length === 0 && (
+                  <div className="text-center py-12 flex flex-col items-center bg-white p-6 rounded-lg shadow-md">
+                    <p className="text-red-500 text-lg font-semibold flex items-center">
+                      <span role="img" aria-label="alert" className="mr-2">
+                        🚫
+                      </span>
+                      No hay registros de trazabilidad disponibles.
+                    </p>
+                    <p className="text-gray-400 text-sm mt-2">
+                      Verifica el usuario o intenta realizar una nueva búsqueda.
+                    </p>
+                  </div>
+                )
+              )}
+            </div>
+
+            {generatingPDF && (
+              <div className="text-center text-blue-500 mt-4 font-bold">Generando PDF...</div>
+            )}
+
+            <div className="flex justify-center space-x-4 mt-4">
+              <button
+                className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition flex items-center space-x-2"
+                onClick={handleSelectAllFiltered}
+              >
+                <FaListAlt /> {/* Icono de lista */}
+                <span>Seleccionar Todo</span>
+              </button>
+              <button
+                className="bg-red-500 text-white px-6 py-2 rounded hover:bg-red-600 transition flex items-center space-x-2"
+                onClick={handleDeselectAll}
+              >
+                <FaTimes /> {/* Icono de cruz */}
+                <span>Quitar Selecciones</span>
+              </button>
+              <button
+                className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 transition flex items-center space-x-2"
+                onClick={() => handleExportarPDF(false)}
+              >
+                <FaCheck /> {/* Icono de cheque */}
+                <span>Exportar Seleccionados</span>
+              </button>
+              <button
+                className="bg-yellow-500 text-white px-6 py-2 rounded hover:bg-yellow-600 transition flex items-center space-x-2"
+                onClick={() => handleExportarPDF(true)}
+              >
+                <FaFileExport /> {/* Icono de exportar */}
+                <span>Exportar Todo</span>
+              </button>
+            </div>
+
+            {/* Botón para volver al panel */}
+          <div className="flex justify-center mt-4">
+            <button
+              className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 transition flex items-center space-x-2"
+              onClick={() => navigate('/admin-panel')}
+            >
+              <FaArrowLeft className="text-sm" />
+              <span>Volver al Panel</span>
+            </button>
+            </div>
+
+            <DetalleTrazabilidadModal
+              isOpen={isModalOpen}
+              onClose={() => setIsModalOpen(false)}
+              trazabilidadId={selectedTrazabilidadId}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
+
 };
 
-export default TrazabilidadPage;
+export default TrazabilidadPage; 

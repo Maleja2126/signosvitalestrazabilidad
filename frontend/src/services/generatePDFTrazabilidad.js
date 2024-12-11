@@ -2,36 +2,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { toast } from "react-toastify";
 
-const formatDate = (dateString) => {
-    try {
-        const options = { 
-            year: "numeric", 
-            month: "long", 
-            day: "numeric", 
-            hour: "2-digit", 
-            minute: "2-digit", 
-            second: "2-digit" 
-        };
-        return new Intl.DateTimeFormat("es-ES", options).format(new Date(dateString));
-    } catch (error) {
-        console.error("Error al formatear la fecha:", error);
-        return "Fecha no disponible";
-    }
-};
-
-const formatDateOnly = (dateString) => {
-    try {
-        const date = new Date(dateString);
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // Los meses van de 0-11
-        const year = date.getFullYear();
-        return `${day}/${month}/${year}`;
-    } catch (error) {
-        console.error("Error al formatear la fecha:", error);
-        return "Fecha no disponible";
-    }
-};
-
+// **Mapeo amigable de nombres de campo**
 const friendlyFieldNames = {
     primer_nombre: "Primer nombre",
     segundo_nombre: "Segundo nombre",
@@ -65,92 +36,203 @@ const friendlyFieldNames = {
     observaciones: "Observaciones",
 };
 
+// **Campos a excluir**
+const excludeKeys = ["id", "id_paciente", "paciente"];
+const shouldExclude = (key, data) =>
+    excludeKeys.includes(key) ||
+    (key === "peso_adulto" && data.peso_pediatrico) ||
+    (key === "peso_pediatrico" && data.peso_adulto);
+
+// **Funciones auxiliares**
+const formatDateOnly = (dateString) => {
+    if (!dateString || isNaN(Date.parse(dateString))) return "Fecha no disponible";
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = String(date.getFullYear()).slice(-2); // Últimos dos dígitos del año
+    return `${day}/${month}/${year}`;
+};
+
+const formatDate = (dateString) => {
+    if (!dateString || isNaN(Date.parse(dateString))) return "Fecha no disponible";
+    const options = { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" };
+    return new Intl.DateTimeFormat("es-ES", options).format(new Date(dateString));
+};
+
 const mapFieldName = (key) => friendlyFieldNames[key] || key.replace(/_/g, " ").toUpperCase();
 
-const renderStyledTable = (doc, startY, data, title, header, marginX) => {
-    if (data && typeof data === "object" && Object.keys(data).length > 0) {
-        const isValidDate = (value) => {
-            const date = new Date(value);
-            return !isNaN(date.getTime()) && value.includes("-");
-        };
-        
-        const tableData = Object.entries(data).map(([key, value]) => [
-            mapFieldName(key),
-            typeof value === "string" && isValidDate(value)
-                ? formatDateOnly(value)
-                : (typeof value === "object" ? JSON.stringify(value, null, 2) : value || "No disponible")
-        ]);        
+const calculateStartY = (doc, startY, requiredHeight) => {
+    const pageHeight = doc.internal.pageSize.height;
+    if (startY + requiredHeight > pageHeight) {
+        doc.addPage();
+        return 20; // Reset al margen superior
+    }
+    return startY;
+};
 
-        autoTable(doc, {
-            startY,
-            head: [[title, header]],
-            body: tableData,
-            theme: "striped",
-            styles: { fontSize: 10, halign: "left" },
-            headStyles: {
-                fillColor: [41, 128, 185],
-                textColor: 255,
-                fontStyle: "bold",
-            },
-            bodyStyles: { textColor: 50 },
-            alternateRowStyles: { fillColor: [245, 245, 245] },
-            columnStyles: {
-                0: { cellWidth: 70 },
-                1: { cellWidth: 100 },
-            },
+// **Procesar datos**
+const processDataForPDF = (data) => {
+    return Object.entries(data)
+        .filter(([key]) => !shouldExclude(key, data))
+        .map(([key, value]) => {
+            if (key === "created_at" && typeof value === "object") {
+                // Mostrar solo el valor "nuevo" para created_at
+                return [mapFieldName(key), formatDateOnly(value.nuevo)];
+            }
+            if (typeof value === "object" && value !== null && value.nuevo) {
+                // Mostrar solo el valor "nuevo" para otros objetos
+                return [mapFieldName(key), value.nuevo || "Sin información"];
+            }
+            if (key.includes("fecha") || (typeof value === "string" && value.includes("T"))) {
+                return [mapFieldName(key), formatDateOnly(value)];
+            }
+            return [mapFieldName(key), value || "Sin información"];
         });
+};
 
-        return doc.lastAutoTable.finalY + 10;
-    } else {
+// **Renderizar tablas estilizadas**
+const renderStyledTable = (doc, startY, data, title, header, marginX) => {
+    if (!data || Object.keys(data).length === 0) {
         doc.setFont("helvetica", "italic");
-        doc.text("No hay datos para esta sección.", marginX, startY);
+        doc.text("No hay datos disponibles.", marginX, startY);
         return startY + 10;
     }
+
+    const tableData = Object.entries(data)
+        .filter(([key]) => !shouldExclude(key, data))
+        .map(([key, value]) => {
+            if (key === "created_at" && typeof value === "object") {
+                // Mostrar solo "nuevo"
+                return [mapFieldName(key), formatDateOnly(value.nuevo)];
+            }
+            if (typeof value === "object" && value !== null && value.nuevo) {
+                // Mostrar solo "nuevo" para otros valores
+                return [mapFieldName(key), value.nuevo || "Sin información"];
+            }
+            if (key.includes("fecha") || (typeof value === "string" && value.includes("T"))) {
+                return [mapFieldName(key), formatDateOnly(value)];
+            }
+            return [mapFieldName(key), value || "Sin información"];
+        });
+
+    autoTable(doc, {
+        startY,
+        head: [[title, header]],
+        body: tableData,
+        theme: "grid", // Cambiar a grid para un diseño más limpio
+        styles: { fontSize: 10, cellPadding: 3, halign: "center" }, // Tipografía uniforme, texto centrado
+        headStyles: {
+            fillColor: [41, 128, 185], // Color azul para el encabezado
+            textColor: 255, // Texto blanco
+            fontSize: 12, // Tamaño de fuente del encabezado
+            fontStyle: "bold", // Fuente en negrita para encabezados
+            halign: "center" // Centrar texto en el encabezado
+        },
+        alternateRowStyles: { fillColor: [245, 245, 245] }, // Alternar colores de fila
+    });
+
+    return doc.lastAutoTable.finalY + 10;
 };
 
 const generatePDFTrazabilidad = async (usuarioInfo, trazabilidadData) => {
+    console.log("Generando PDF de trazabilidad final");
     try {
-        console.log("Usuario Info:", usuarioInfo);
-        console.log("Trazabilidad Data:", trazabilidadData);
-
         const doc = new jsPDF();
         const MARGIN_X = 20;
+        const pageWidth = doc.internal.pageSize.width; // Ancho de la página
+        const pageHeight = doc.internal.pageSize.height; // Alto de la página
         let startY = 20;
+        let currentPage = 1; // Contador de páginas
 
-        // Encabezado
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(20);
-        doc.text("Reporte de Trazabilidad", MARGIN_X, startY);
-        startY += 10;
+        // Calcular el rango de fechas dinámicamente
+        const calcularRangoFechas = (acciones) => {
+            const fechas = acciones.map((accion) => new Date(accion.fecha_hora));
+            const fechaInicio = new Date(Math.min(...fechas));
+            const fechaFin = new Date(Math.max(...fechas));
+            return `${fechaInicio.toLocaleDateString()} - ${fechaFin.toLocaleDateString()}`;
+        };
 
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(12);
-        doc.text(`Usuario: ${usuarioInfo.nombre || "Usuario desconocido"}`, MARGIN_X, startY);
-        startY += 6;
-        doc.text(
-            `Rango de Fechas: ${formatDate(usuarioInfo.fechaInicio)} - ${formatDate(usuarioInfo.fechaFin)}`,
-            MARGIN_X,
-            startY
-        );
-        startY += 10;
-        doc.line(MARGIN_X, startY, 190, startY); // Línea divisoria
-        startY += 10;
+        // Función para dibujar el encabezado general del reporte
+        const drawReportHeader = () => {
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(20);
+            doc.setTextColor(41, 76, 119); // Azul oscuro
+            doc.text("Reporte de Trazabilidad", pageWidth / 2, startY, { align: "center" });
+            startY += 15; // Espaciado después del título
+        };
 
-        if (!Array.isArray(trazabilidadData) || trazabilidadData.length === 0) {
-            doc.text("No se encontraron registros de trazabilidad para este usuario.", MARGIN_X, startY);
-        } else {
-            trazabilidadData.forEach((accion, index) => {
-                if (startY + 60 > doc.internal.pageSize.height) {
+        // Función para dibujar el encabezado del usuario
+        const drawUserHeader = (usuario, rangoFechas) => {
+            doc.setFillColor(41, 76, 119); // Color azul oscuro
+            doc.rect(0, startY, pageWidth, 20, "F"); // Barra superior
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(12);
+            doc.setTextColor(255, 255, 255); // Texto blanco
+            doc.text(`Usuario: ${usuario}`, MARGIN_X, startY + 10);
+            doc.text(`Rango de fechas: ${rangoFechas}`, MARGIN_X, startY + 16);
+
+            startY += 30; // Espaciado después del encabezado
+        };
+
+        // Función para dibujar el pie de página
+        const drawFooter = () => {
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(10);
+            doc.setTextColor(150, 150, 150); // Gris claro
+            doc.text(`${currentPage}`, pageWidth - 20, pageHeight - 10); // Solo el número de página
+        };
+
+        // Dibujar encabezado general del reporte
+        drawReportHeader();
+        drawFooter(doc, currentPage); // Numerar la primera página
+
+        // Agrupar datos por usuario
+        const groupedData = trazabilidadData.reduce((acc, item) => {
+            const userName = item.usuario_nombre || "Usuario desconocido";
+            if (!acc[userName]) acc[userName] = [];
+            acc[userName].push(item);
+            return acc;
+        }, {});
+
+        let firstPage = true; // Controlar si es la primera página
+
+        // Iterar por cada usuario y sus acciones
+        for (const [usuario, acciones] of Object.entries(groupedData)) {
+            const rangoFechas = calcularRangoFechas(acciones); // Calcular rango de fechas dinámicamente
+
+            if (firstPage) {
+                drawUserHeader(usuario, rangoFechas);
+                firstPage = false;
+            } else {
+                doc.addPage();
+                currentPage++;
+                drawFooter(doc, currentPage); // Pie de página en cada nueva página
+                startY = 20;
+                drawReportHeader();
+                drawUserHeader(usuario, rangoFechas);
+            }
+
+            // Procesar acciones
+            acciones.forEach((accion, index) => {
+                if (index > 0) {
                     doc.addPage();
+                    currentPage++;
+                    drawFooter(doc, currentPage); // Pie de página antes de avanzar
                     startY = 20;
                 }
 
+                // Título de la acción
                 doc.setFont("helvetica", "bold");
                 doc.setFontSize(14);
+                doc.setTextColor(41, 76, 119); // Azul oscuro
                 doc.text(`Acción: ${accion.accion || "Sin acción"}`, MARGIN_X, startY);
                 startY += 8;
 
+                // Detalles de la acción
                 doc.setFont("helvetica", "normal");
+                doc.setFontSize(12);
+                doc.setTextColor(0, 0, 0); // Negro
                 doc.text(`Fecha y Hora: ${formatDate(accion.fecha_hora)}`, MARGIN_X, startY);
                 startY += 6;
 
@@ -159,15 +241,11 @@ const generatePDFTrazabilidad = async (usuarioInfo, trazabilidadData) => {
                     startY += 6;
                 }
 
-                let datosNuevos = accion.datos_nuevos || {};
-                let datosAntiguos = accion.datos_antiguos || {};
+                startY += 10;
 
-                try {
-                    datosNuevos = typeof datosNuevos === "string" ? JSON.parse(datosNuevos) : datosNuevos;
-                    datosAntiguos = typeof datosAntiguos === "string" ? JSON.parse(datosAntiguos) : datosAntiguos;
-                } catch (error) {
-                    console.error("Error al parsear los datos JSON:", error);
-                }
+                // Mostrar datos nuevos y antiguos
+                const datosNuevos = typeof accion.datos_nuevos === "string" ? JSON.parse(accion.datos_nuevos || "{}") : accion.datos_nuevos;
+                const datosAntiguos = typeof accion.datos_antiguos === "string" ? JSON.parse(accion.datos_antiguos || "{}") : accion.datos_antiguos;
 
                 if (datosNuevos && Object.keys(datosNuevos).length > 0) {
                     startY = renderStyledTable(doc, startY, datosNuevos, "Datos Nuevos", "Valores Nuevos", MARGIN_X);
@@ -179,8 +257,32 @@ const generatePDFTrazabilidad = async (usuarioInfo, trazabilidadData) => {
             });
         }
 
+        // Página final con información general
+        doc.addPage();
+        currentPage++;
+        drawFooter(doc, currentPage); // Pie de página en la última página
+        startY = 20;
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(16);
+        doc.setTextColor(41, 76, 119);
+        doc.text("Información General", pageWidth / 2, startY, { align: "center" });
+        startY += 15;
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(12);
+        doc.text(`Total de acciones: ${trazabilidadData.length}`, MARGIN_X, startY);
+        startY += 8;
+
+        Object.entries(groupedData).forEach(([usuario, acciones]) => {
+            doc.text(`Usuario: ${usuario} - Acciones: ${acciones.length}`, MARGIN_X, startY);
+            startY += 8;
+        });
+
+        const date = new Date().toLocaleDateString();
+        doc.text(`Reporte generado el: ${date}`, MARGIN_X, startY + 10);
+
         const formattedDate = new Date().toISOString().split("T")[0];
-        doc.save(`Trazabilidad_${usuarioInfo.nombre || "Reporte"}_${formattedDate}.pdf`);
+        doc.save(`Trazabilidad_Reporte_${formattedDate}.pdf`);
         toast.success("PDF generado exitosamente.");
     } catch (error) {
         console.error("Error al generar el PDF:", error);

@@ -87,9 +87,9 @@ const SearchUsers = () => {
             <ToastContainer />
             <h1 className="text-3xl font-bold mb-3 mt-10">Usuarios Registrados</h1>
             {error && <p className="text-red-500">{error}</p>}
-    
-            <div className="w-full max-w-7xl overflow-x-auto mt-4" style={{ marginLeft: '260px' }}>
-                {/* Ajusta el margen para desplazar a la derecha */}
+
+            <div className="w-full max-w-6xl overflow-x-auto mt-4">
+                {/* Ajustamos el ancho del contenedor para que no ocupe toda la pantalla */}
                 <div className="bg-white shadow-xl rounded-lg border border-gray-200">
                     <div className="overflow-x-auto max-h-[500px]">
                         <table className="min-w-full table-auto border-collapse table-fixed">
@@ -108,11 +108,11 @@ const SearchUsers = () => {
                             <tbody className="overflow-y-auto max-h-[400px]">
                                 {users.map((user) => (
                                     <tr key={user.id} className="border-b hover:bg-gray-100 transition-all">
-                                        <td className="p-3 text-center text-sm truncate">{user.username}</td>
-                                        <td className="p-3 text-center text-sm truncate">{user.numero_identificacion}</td>
-                                        <td className="p-3 text-center text-sm truncate">{user.email}</td>
-                                        <td className="p-3 text-center text-sm truncate">{roleNames[user.role]}</td>
-                                        <td className="p-3 text-center text-sm truncate">
+                                        <td className="p-4 text-center text-sm truncate">{user.username}</td>
+                                        <td className="p-4 text-center text-sm truncate">{user.numero_identificacion}</td>
+                                        <td className="p-4 text-center text-sm truncate">{user.email}</td>
+                                        <td className="p-4 text-center text-sm truncate">{roleNames[user.role]}</td>
+                                        <td className="p-4 text-center text-sm truncate">   
                                             {user.is_active ? "Activo" : "Inactivo"}
                                         </td>
                                         <td className="p-4 text-center text-sm">
@@ -131,9 +131,8 @@ const SearchUsers = () => {
                                         <td className="p-3 text-center flex justify-center space-x-1 text-sm">
                                             <button
                                                 onClick={() => handleToggleStatus(user.id, user.is_active)}
-                                                className={`flex items-center p-3 text-white rounded text-xs ${
-                                                    user.is_active ? "bg-gray-500" : "bg-green-500"
-                                                } hover:bg-opacity-80 transition-all`}
+                                                className={`flex items-center p-3 text-white rounded text-xs ${user.is_active ? "bg-gray-500" : "bg-green-500"
+                                                    } hover:bg-opacity-80 transition-all`}
                                             >
                                                 {user.is_active ? (
                                                     <>
@@ -168,7 +167,7 @@ const SearchUsers = () => {
                     </div>
                 </div>
             </div>
-    
+
             <button
                 onClick={() => navigate("/admin-panel")}
                 className="mt-4 flex items-center px-4 py-2 bg-blue-500 text-white font-bold rounded hover:bg-blue-600 transition"
@@ -176,7 +175,7 @@ const SearchUsers = () => {
                 <FiHome className="mr-2" /> Volver al Panel
             </button>
         </div>
-    );    
+    );
 };
 
 export default SearchUsers;

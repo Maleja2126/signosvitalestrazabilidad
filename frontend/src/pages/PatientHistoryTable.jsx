@@ -167,8 +167,8 @@ const PatientHistoryPage = ({ token }) => {
     if (error) return <div className="text-red-500">{error}</div>;
 
     return (
-        <div className="flex flex-col items-center min-h-screen bg-gray-100 p-6 overflow-auto">
-            <h1 className="text-2xl font-bold mb-6">Trazabilidad del paciente </h1>
+        <div className="flex flex-col items-center min-h-screen bg-gray-100 p-10 overflow-auto">
+            <h1 className="text-3xl font-bold mb-8">Trazabilidad del paciente </h1>
             {/* Contenedor para capturar en PDF */}
             <div id="pdf-content">
                 {/* Filtros para el historial de cambios del paciente */}
@@ -256,7 +256,7 @@ const PatientHistoryPage = ({ token }) => {
                 </div>
                 {/* Signos Vitales */}
                 <div className="bg-white p-6 rounded shadow-lg w-full max-w-7xl mb-6 overflow-x-auto">
-                    <h2 className="text-lg font-bold mb-4">Historial cambios de Signos Vitales</h2>
+                    <h2 className="text-lg font-bold mb-4">Historial de cambios de los Signos Vitales</h2>
                     {filteredPatientHistory.length > 0 ? (
 
                         <table className="w-full border-collapse table-auto text-sm">

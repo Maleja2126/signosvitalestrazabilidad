@@ -34,14 +34,53 @@ exports.createPatientRecord = async (req, res) => {
     }
 
     try {
-        // Insertar registro de signos vitales
+
+        // Obtener información del paciente
+        const [paciente] = await db.query("SELECT * FROM patients WHERE id = ?", [id_paciente]);
+        if (!paciente.length) {
+            return res.status(404).json({ message: "Paciente no encontrado" });
+        }
+
+        const pacienteInfo = paciente[0]; // Información del paciente
+
+        // Insertar registro de signos vitales con el responsable
         const [result] = await db.query(
-            "INSERT INTO registros_paciente (id_paciente, record_date, record_time, presion_sistolica, presion_diastolica, presion_media, pulso, temperatura, frecuencia_respiratoria, saturacion_oxigeno, peso_adulto, peso_pediatrico, talla, observaciones) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            [id_paciente, record_date, record_time, presion_sistolica, presion_diastolica, presion_media, pulso, temperatura, frecuencia_respiratoria, saturacion_oxigeno, peso_adulto, peso_pediatrico, talla, observaciones]
+            `INSERT INTO registros_paciente 
+            (id_paciente, record_date, record_time, presion_sistolica, presion_diastolica, presion_media, 
+             pulso, temperatura, frecuencia_respiratoria, saturacion_oxigeno, peso_adulto, peso_pediatrico, 
+             talla, observaciones, responsable_signos) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                id_paciente,
+                record_date,
+                record_time,
+                presion_sistolica,
+                presion_diastolica,
+                presion_media,
+                pulso,
+                temperatura,
+                frecuencia_respiratoria,
+                saturacion_oxigeno,
+                peso_adulto,
+                peso_pediatrico,
+                talla,
+                observaciones,
+                req.user.username, // Responsable que creó el registro
+            ]
         );
 
         if (result.affectedRows > 0) {
             // Registrar trazabilidad
+            const datosNuevos = {
+                ...req.body,
+                responsable_signos: req.user.username, // Agregar responsable a los datos nuevos
+                paciente: {
+                    nombre_completo: `${pacienteInfo.primer_nombre} ${pacienteInfo.segundo_nombre} ${pacienteInfo.primer_apellido} ${pacienteInfo.segundo_apellido}`,
+                    tipo_identificacion: pacienteInfo.tipo_identificacion,
+                    numero_identificacion: pacienteInfo.numero_identificacion,
+                },
+            };
+
             await db.query(
                 `INSERT INTO trazabilidad 
                 (usuario_id, usuario_nombre, accion, entidad_id, datos_nuevos, fecha_hora, tipo_accion) 
@@ -51,9 +90,9 @@ exports.createPatientRecord = async (req, res) => {
                     req.user.username, // Nombre del usuario
                     "Nuevo registro de Signos Vitales", // Acción
                     id_paciente, // ID del paciente
-                    JSON.stringify(req.body), // Datos nuevos
+                    JSON.stringify(datosNuevos), // Datos nuevos con responsable
                     new Date(), // Fecha y hora
-                    "Signos Vitales" // Tipo de acción
+                    "Signos Vitales", // Tipo de acción
                 ]
             );
         }
@@ -168,62 +207,59 @@ exports.getPatientRecord = async (req, res) => {
 
 // Actualizar un registro de signos vitales
 exports.updatePatientRecord = async (req, res) => {
-    const { idRegistro } = req.params; // ID del registro a actualizar
-    const updatedData = req.body; // Datos enviados desde el frontend
+    const { idRegistro } = req.params;
+    const updatedData = req.body;
 
-    // Validar si el usuario está autorizado
-    const responsable_signos = req.user?.username; // Verifica si el usuario autenticado tiene un nombre
+    const responsable_signos = req.user?.username;
     if (!responsable_signos) {
         return res.status(401).json({ message: "Usuario no autorizado para realizar esta acción" });
     }
 
-    // Agregar el responsable y formatear la fecha a los datos actualizados
     updatedData.responsable_signos = responsable_signos;
-    if (updatedData.created_at) {
-        updatedData.created_at = formatDateForMySQL(updatedData.created_at);
-    }
-
-    // Validaciones específicas
-    const errors = [];
-    if (updatedData.talla && updatedData.talla > 250) errors.push("La altura excede el valor máximo realista.");
-    if (updatedData.pulso && (updatedData.pulso > 200 || updatedData.pulso < 40)) errors.push("Valor de pulso fuera de rango.");
-    if (updatedData.frecuencia_respiratoria && (updatedData.frecuencia_respiratoria > 70 || updatedData.frecuencia_respiratoria < 10)) errors.push("Frecuencia respiratoria demasiado alta o baja.");
-    if (updatedData.saturacion_oxigeno && (updatedData.saturacion_oxigeno > 100 || updatedData.saturacion_oxigeno < 50)) errors.push("La saturación de oxígeno no puede superar el 100% o ser menor de 50%.");
-    if (updatedData.presion_sistolica && (updatedData.presion_sistolica > 190 || updatedData.presion_sistolica < 50)) errors.push("La presión arterial sistólica es demasiado alta o baja.");
-    if (updatedData.presion_diastolica && (updatedData.presion_diastolica > 130 || updatedData.presion_diastolica < 40)) errors.push("La presión diastólica es demasiado alta o baja.");
-    if (updatedData.temperatura && (updatedData.temperatura > 55 || updatedData.temperatura < 15)) errors.push("La temperatura es demasiado alta o baja.");
-
-    if (errors.length > 0) {
-        return res.status(400).json({ message: "Errores de validación", errors });
-    }
 
     try {
-        // Obtener los datos antiguos del registro
+        // Obtener información del registro y paciente
         const [oldRecord] = await db.query("SELECT * FROM registros_paciente WHERE id = ?", [idRegistro]);
-
         if (!oldRecord.length) {
             return res.status(404).json({ message: "Registro no encontrado" });
         }
 
         const oldData = oldRecord[0];
 
-        // Actualizar el registro en la base de datos
-        const [result] = await db.query("UPDATE registros_paciente SET ? WHERE id = ?", [updatedData, idRegistro]);
+        const [paciente] = await db.query("SELECT * FROM patients WHERE id = ?", [oldData.id_paciente]);
+        if (!paciente.length) {
+            return res.status(404).json({ message: "Paciente no encontrado" });
+        }
 
+        const pacienteInfo = paciente[0]; // Información del paciente
+
+        // Actualizar registro en la base de datos
+        const [result] = await db.query("UPDATE registros_paciente SET ? WHERE id = ?", [updatedData, idRegistro]);
         if (result.affectedRows === 0) {
             return res.status(404).json({ message: "Registro no encontrado para actualizar" });
         }
 
-        // Comparar cambios para registrar trazabilidad
         const cambios = {};
         for (const key in updatedData) {
             if (updatedData[key] !== oldData[key]) {
                 cambios[key] = {
                     anterior: oldData[key],
-                    nuevo: updatedData[key]
+                    nuevo: updatedData[key],
                 };
             }
         }
+
+        cambios["responsable_signos"] = {
+            anterior: oldData.responsable_signos || null,
+            nuevo: responsable_signos,
+        };
+
+        // Agregar información del paciente a los datos nuevos
+        cambios["paciente"] = {
+            nombre_completo: `${pacienteInfo.primer_nombre} ${pacienteInfo.primer_apellido}`,
+            tipo_identificacion: pacienteInfo.tipo_identificacion,
+            numero_identificacion: pacienteInfo.numero_identificacion,
+        };
 
         // Registrar trazabilidad
         await db.query(
@@ -231,38 +267,16 @@ exports.updatePatientRecord = async (req, res) => {
             (usuario_id, usuario_nombre, accion, entidad_id, datos_antiguos, datos_nuevos, fecha_hora, tipo_accion) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             [
-                req.user.id, // ID del usuario responsable
-                responsable_signos, // Nombre del usuario
-                "Actualización de Signos Vitales", // Acción realizada
-                oldData.id_paciente, // ID del paciente asociado al registro
-                JSON.stringify(oldData), // Datos antiguos
-                JSON.stringify(cambios), // Datos nuevos
-                new Date(), // Fecha y hora de la acción
-                "Signos Vitales" // Tipo de acción
+                req.user.id,
+                responsable_signos,
+                "Actualización de Signos Vitales",
+                oldData.id_paciente,
+                JSON.stringify(oldData),
+                JSON.stringify(cambios),
+                new Date(),
+                "Signos Vitales",
             ]
         );
-
-        // Registrar en el historial
-        const historial = {
-            id_paciente: oldData.id_paciente,  // ID del paciente del registro
-            id_registro: idRegistro,           // El ID del registro actualizado
-            record_date: updatedData.record_date ?? oldData.record_date,
-            record_time: updatedData.record_time ?? oldData.record_time,
-            presion_sistolica: updatedData.presion_sistolica ?? oldData.presion_sistolica,
-            presion_diastolica: updatedData.presion_diastolica ?? oldData.presion_diastolica,
-            presion_media: updatedData.presion_media ?? oldData.presion_media,
-            pulso: updatedData.pulso ?? oldData.pulso,
-            temperatura: updatedData.temperatura ?? oldData.temperatura,
-            frecuencia_respiratoria: updatedData.frecuencia_respiratoria ?? oldData.frecuencia_respiratoria,
-            saturacion_oxigeno: updatedData.saturacion_oxigeno ?? oldData.saturacion_oxigeno,
-            peso_adulto: updatedData.peso_adulto ?? oldData.peso_adulto,
-            peso_pediatrico: updatedData.peso_pediatrico ?? oldData.peso_pediatrico,
-            talla: updatedData.talla ?? oldData.talla,
-            observaciones: updatedData.observaciones ?? oldData.observaciones,
-            responsable_signos: responsable_signos, // Responsable que hizo el cambio
-        };
-
-        await db.query("INSERT INTO historial_signos_pacientes SET ?", [historial]);
 
         res.json({ message: "Registro actualizado correctamente y registrado en el historial y trazabilidad." });
     } catch (error) {

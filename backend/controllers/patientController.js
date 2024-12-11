@@ -213,6 +213,9 @@ exports.updatePatient = async (req, res) => {
             }
         }
 
+        // Agregar el responsable de la actualización a los datos nuevos
+        cambios['responsable_username'] = responsable_registro;
+
         // Registrar los cambios en trazabilidad
         await db.query(
             `INSERT INTO trazabilidad 
