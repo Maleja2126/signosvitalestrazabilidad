@@ -135,7 +135,7 @@ const renderStyledTable = (doc, startY, data, title, header, marginX) => {
 };
 
 const generatePDFTrazabilidad = async (usuarioInfo, trazabilidadData) => {
-    console.log("Generando PDF de trazabilidad final");
+    console.log("Generando PDF de trazabilidad de usuarios final");
     try {
         const doc = new jsPDF();
         const MARGIN_X = 20;
