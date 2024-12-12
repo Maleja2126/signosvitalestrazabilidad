@@ -9,15 +9,14 @@ const Login = () => {
     const [numeroIdentificacion, setNumeroIdentificacion] = useState("");
     const [password, setPassword] = useState("");
     const [passwordVisible, setPasswordVisible] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
 
-        // Validaciones generales
+        // Validaciones
         if (!numeroIdentificacion || !password) {
-            toast.error("Todos los campos son obligatorios.");
+            toast.error("Por favor, complete todos los campos.");
             return;
         }
         if (!/^\d+$/.test(numeroIdentificacion)) {
@@ -28,19 +27,19 @@ const Login = () => {
             toast.error("La contraseña debe tener al menos 8 caracteres.");
             return;
         }
-
-        setIsLoading(true); // Mostrar estado de carga
+        if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
+            toast.error("La contraseña debe incluir mayúsculas, minúsculas y números.");
+            return;
+        }
 
         try {
             const response = await login(numeroIdentificacion, password);
-            setIsLoading(false); // Ocultar estado de carga
             localStorage.setItem("token", response.data.token);
             localStorage.setItem("role", response.data.role);
             localStorage.setItem("numero_identificacion", response.data.numero_identificacion);
             toast.success("Inicio de sesión exitoso!");
             navigate("/dashboard");
         } catch (err) {
-            setIsLoading(false); // Ocultar estado de carga en caso de error
             console.error("Error al iniciar sesión", err);
             if (err.response && err.response.status === 403) {
                 toast.error("El usuario está deshabilitado. Contacte al administrador.");
@@ -74,17 +73,8 @@ const Login = () => {
                     borderRadius: "15px",
                     boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
                     padding: "20px",
-                    transition: "box-shadow 0.3s ease-in-out",
-                    animation: "fadeIn 0.5s ease-in-out",
                 }}
-                onMouseEnter={(e) =>
-                    (e.currentTarget.style.boxShadow = "0 8px 16px rgba(0,0,0,0.2)")
-                }
-                onMouseLeave={(e) =>
-                    (e.currentTarget.style.boxShadow = "0 4px 8px rgba(0,0,0,0.1)")
-                }
             >
-                {/* Ícono de usuario */}
                 <div style={{ textAlign: "center", marginBottom: "20px" }}>
                     <div
                         style={{
@@ -102,16 +92,6 @@ const Login = () => {
                     </div>
                 </div>
 
-                {/* Mensaje de bienvenida */}
-                <div style={{ textAlign: "center", marginBottom: "20px" }}>
-                    <h2 style={{ margin: "0", fontSize: "24px", color: "#333" }}>
-                        ¡Bienvenido de nuevo!
-                    </h2>
-                    <p style={{ margin: "5px 0", fontSize: "14px", color: "#666" }}>
-                        Por favor, inicie sesión para continuar.
-                    </p>
-                </div>
-
                 <form onSubmit={handleLogin}>
                     {/* Campo de usuario */}
                     <div style={{ marginBottom: "15px", position: "relative" }}>
@@ -126,7 +106,6 @@ const Login = () => {
                             }}
                         />
                         <input
-                            autoFocus
                             type="text"
                             placeholder="Número de identificación"
                             value={numeroIdentificacion}
@@ -209,42 +188,21 @@ const Login = () => {
                         style={{
                             width: "100%",
                             padding: "10px",
-                            background: isLoading ? "rgba(34,139,34,0.7)" : "rgba(50,205,50,0.9)",
+                            background: "rgba(50,205,50,0.9)",
                             color: "white",
                             fontWeight: "bold",
                             borderRadius: "25px",
                             border: "none",
-                            cursor: isLoading ? "not-allowed" : "pointer",
+                            cursor: "pointer",
                             transition: "background 0.3s ease",
                         }}
-                        disabled={isLoading}
-                        onMouseEnter={(e) => {
-                            if (!isLoading) e.target.style.background = "rgba(34,139,34,1)";
-                        }}
-                        onMouseLeave={(e) => {
-                            if (!isLoading) e.target.style.background = "rgba(50,205,50,0.9)";
-                        }}
+                        onMouseEnter={(e) => (e.target.style.background = "rgba(50,205,50,1)")}
+                        onMouseLeave={(e) => (e.target.style.background = "rgba(50,205,50,0.9)")}
                     >
-                        {isLoading ? "Cargando..." : "Iniciar Sesión"}
+                        Iniciar Sesión
                     </button>
                 </form>
             </div>
-
-            {/* Animación de fade-in */}
-            <style>
-                {`
-                @keyframes fadeIn {
-                    from {
-                        opacity: 0;
-                        transform: translateY(-20px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-                }
-                `}
-            </style>
         </div>
     );
 };

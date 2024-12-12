@@ -13,13 +13,14 @@ const Sidebar = () => {
         const loadUserInfo = async () => {
             try {
                 const response = await getUserInfo();
-                setUserInfo(response.data);
+                setUserInfo(response.data); // Asegúrate de guardar los datos completos
             } catch (error) {
-                console.error('Error loading user info:', error);
+                console.error('Error al cargar la información del usuario:', error);
             }
         };
+    
         loadUserInfo();
-    }, []);
+    }, []); 
 
     const handleLogout = () => {
         localStorage.removeItem('token');

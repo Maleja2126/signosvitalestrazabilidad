@@ -23,6 +23,7 @@ import PatientHistoryPage from "./pages/PatientHistoryTable";
 import EditPatientDataForm from "./pages/EditPatientDataForm"
 import PatientPage from './pages/PatientHistoryTableSignos';
 import TrazabilidadPage from "./pages/TrazabilidadPage";
+import UpdateProfileImage from './pages/UpdateProfileImage';
 
 function App() {
     return (
@@ -47,7 +48,7 @@ function App() {
                 <Route path="/patient-history/:idPaciente" element={<ProtectedRoute><Layout><PatientHistoryPage/></Layout> /</ProtectedRoute>}/>
                 <Route path="/patient/:idPaciente/edit-record/:idRegistro" element={<ProtectedRoute><Layout><EditPatientDataForm /></Layout></ProtectedRoute>}/>
                 <Route path="/patient/:idPaciente" element={<ProtectedRoute><Layout><PatientPage /></Layout></ProtectedRoute>} />
-
+                <Route path="/update-profile" element={<ProtectedRoute><UpdateProfileImage /></ProtectedRoute>} />
             
                 {/* Nuevas rutas para registro y búsqueda de usuarios */}
                 <Route path="/register-user" element={<ProtectedRoute><Layout><RegisterUser /></Layout></ProtectedRoute>} />

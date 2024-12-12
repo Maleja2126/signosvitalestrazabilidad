@@ -78,3 +78,22 @@ export const updateUser = async (idUsuario, updatedData) => {
         throw new Error("Error al actualizar el usuario: " + error.message);
     }
 };
+
+// Función para actualizar la foto de perfil
+export const updateProfileImage = async (formData) => {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error("Token no encontrado");
+
+        const response = await axios.patch(`${API_URL}/auth/update-profile-image`, formData, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error al actualizar la foto de perfil:", error);
+        throw error;
+    }
+};

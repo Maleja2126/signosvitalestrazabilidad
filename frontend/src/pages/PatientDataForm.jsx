@@ -44,7 +44,7 @@ const PatientDataForm = () => {
     const calculatePresionMedia = () => {
         if (presionSistolica && presionDiastolica) {
             const tam = (
-                (parseInt(presionDiastolica) + 2 * parseInt(presionSistolica)) / 3
+                (parseInt(presionSistolica) + 2 * parseInt(presionDiastolica)) / 3
             ).toFixed(0);
             setPresionMedia(tam);
         }

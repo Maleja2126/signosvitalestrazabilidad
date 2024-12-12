@@ -219,3 +219,28 @@ exports.getUserInfo = async (req, res) => {
         res.status(500).json({ message: "Error en el servidor", error: error.message });
     }
 };
+
+//cambiar la foto de perfil
+exports.updateProfileImage = async (req, res) => {
+    console.log("Entrando a updateProfileImage");
+    try {
+        upload.single('profileImage')(req, res, async function (err) {
+            if (err) return res.status(400).json({ message: err.message });
+
+            const userId = req.user.id;
+            const profileImage = req.file ? req.file.filename : null;
+
+            if (!profileImage) {
+                return res.status(400).json({ message: "No se proporcionó una imagen válida." });
+            }
+
+            // Actualizar la base de datos
+            await db.query("UPDATE users SET profile_image = ? WHERE id = ?", [profileImage, userId]);
+
+            res.status(200).json({ message: "Imagen de perfil actualizada exitosamente", profileImage });
+        });
+    } catch (error) {
+        console.error('Error al actualizar la imagen de perfil:', error);
+        res.status(500).json({ message: "Error en el servidor" });
+    }
+};

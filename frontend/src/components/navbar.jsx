@@ -20,11 +20,11 @@ const Navbar = () => {
     navigate("/");
   };
 
-  // Función para cambiar foto de perfil y redirigir a la página de perfil
-  const handleProfileChange = () => {
-    setShowProfileModal(false); // Cierra el modal
-    navigate("/profile"); // Redirige a la página de perfil
-  };
+  // Función para cambiar foto de perfil y redirigir a la página de cambio de foto
+const handleProfileChange = () => {
+  setShowProfileModal(false); // Cierra el modal
+  navigate("/update-profile"); // Redirige a la página de cambio de foto de perfil
+};
 
   return (
     <div>

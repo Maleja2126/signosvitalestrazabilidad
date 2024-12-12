@@ -9,6 +9,8 @@ router.post('/login', authController.login);
 router.post('/register', authController.register);
 router.post('/reset-password', authController.resetPassword);
 router.patch('/reset-password/:token', authController.updatePassword);
+router.patch('/update-profile-image', authMiddleware, authController.updateProfileImage);
+
 
 // Rutas protegidas
 router.get('/user-info', authMiddleware, authController.getUserInfo);
