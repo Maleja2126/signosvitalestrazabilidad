@@ -37,7 +37,7 @@ const friendlyFieldNames = {
 };
 
 // **Campos a excluir**
-const excludeKeys = ["id", "id_paciente", "paciente"];
+const excludeKeys = ["id", "id_paciente"];
 const shouldExclude = (key, data) =>
     excludeKeys.includes(key) ||
     (key === "peso_adulto" && data.peso_pediatrico) ||
@@ -45,11 +45,29 @@ const shouldExclude = (key, data) =>
 
 // **Funciones auxiliares**
 const formatDateOnly = (dateString) => {
-    if (!dateString || isNaN(Date.parse(dateString))) return "Fecha no disponible";
+    console.log("Recibido en formatDateOnly:", dateString);
+
+    // Detectar formato DD/MM/YYYY y convertirlo
+    const dateParts = dateString.split("/");
+    if (dateParts.length === 3) {
+        const [day, month, year] = dateParts;
+        const parsedDate = new Date(`${year}-${month}-${day}`);
+        if (!isNaN(parsedDate)) {
+            console.log("Fecha convertida manualmente:", parsedDate);
+            return `${day.padStart(2, "0")}/${month.padStart(2, "0")}/${year}`;
+        }
+    }
+
+    // Manejar formato estándar
+    if (!dateString || isNaN(Date.parse(dateString))) {
+        console.log("Fecha inválida o no disponible:", dateString);
+        return "Fecha no disponible";
+    }
+
     const date = new Date(dateString);
     const day = String(date.getDate()).padStart(2, "0");
     const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = String(date.getFullYear()).slice(-2); // Últimos dos dígitos del año
+    const year = String(date.getFullYear()).slice(-2);
     return `${day}/${month}/${year}`;
 };
 
@@ -72,15 +90,17 @@ const calculateStartY = (doc, startY, requiredHeight) => {
 
 // **Procesar datos**
 const processDataForPDF = (data) => {
+    console.log("Datos recibidos:", data);
     return Object.entries(data)
         .filter(([key]) => !shouldExclude(key, data))
         .map(([key, value]) => {
+            if (key === "fecha_nacimiento" && value) {
+                return [mapFieldName(key), formatDateOnly(value)];
+            }
             if (key === "created_at" && typeof value === "object") {
-                // Mostrar solo el valor "nuevo" para created_at
                 return [mapFieldName(key), formatDateOnly(value.nuevo)];
             }
             if (typeof value === "object" && value !== null && value.nuevo) {
-                // Mostrar solo el valor "nuevo" para otros objetos
                 return [mapFieldName(key), value.nuevo || "Sin información"];
             }
             if (key.includes("fecha") || (typeof value === "string" && value.includes("T"))) {

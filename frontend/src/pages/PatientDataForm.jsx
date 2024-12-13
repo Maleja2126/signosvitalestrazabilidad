@@ -9,7 +9,7 @@ const PatientDataForm = () => {
     const { idPaciente } = useParams();
     const navigate = useNavigate();
 
-    const currentDate = new Date().toISOString().split("T")[0];
+    const currentDate = new Date().toLocaleDateString("en-CA");
     const currentTime = new Date().toTimeString().split(" ")[0].slice(0, 5);
 
     const [ageGroup, setAgeGroup] = useState("");
@@ -41,14 +41,18 @@ const PatientDataForm = () => {
         loadPatientInfo();
     }, [idPaciente]);
 
-    const calculatePresionMedia = () => {
-        if (presionSistolica && presionDiastolica) {
-            const tam = (
-                (parseInt(presionSistolica) + 2 * parseInt(presionDiastolica)) / 3
-            ).toFixed(0);
+    useEffect(() => {
+        const sistolica = parseFloat(presionSistolica);
+        const diastolica = parseFloat(presionDiastolica);
+
+        if (!isNaN(sistolica) && !isNaN(diastolica)) {
+            const tam = ((sistolica + 2 * diastolica) / 3).toFixed(0);
+            console.log("Presión Media Calculada:", tam);
             setPresionMedia(tam);
+        } else {
+            setPresionMedia("");
         }
-    };
+    }, [presionSistolica, presionDiastolica]); // Se ejecuta cada vez que cambian estos estados
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -176,7 +180,6 @@ const PatientDataForm = () => {
                             value={presionSistolica}
                             onChange={(e) => {
                                 setPresionSistolica(e.target.value);
-                                calculatePresionMedia();
                             }}
                             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
                         />
@@ -188,7 +191,7 @@ const PatientDataForm = () => {
                             value={presionDiastolica}
                             onChange={(e) => {
                                 setPresionDiastolica(e.target.value);
-                                calculatePresionMedia();
+
                             }}
                             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
                         />

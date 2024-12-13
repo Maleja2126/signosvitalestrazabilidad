@@ -104,6 +104,19 @@ const EditPatientDataForm = () => {
             return;
         }
     
+    // Validación para asegurarse de que la fecha y la hora sean actuales
+    const currentDate = new Date().toLocaleDateString("en-CA");
+    const currentTime = new Date().toTimeString().split(" ")[0].slice(0, 5);
+
+    if (formData.record_date !== currentDate || formData.record_time !== currentTime) {
+        setFormData((prevData) => ({
+            ...prevData,
+            record_date: currentDate,
+            record_time: currentTime,
+        }));
+        toast.error("La fecha y la hora deben ser las actuales.");
+        return;
+    }
         try {
             await updatePatientRecord(idRegistro, formData, token);
             toast.success("¡Registro actualizado correctamente!");

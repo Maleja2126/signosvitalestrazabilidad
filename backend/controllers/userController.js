@@ -11,20 +11,6 @@ exports.getUsers = async (req, res) => {
     }
 };
 
-// Actualizar rol de usuario
-exports.updateUserRole = async (req, res) => {
-    const { id } = req.params;
-    const { role } = req.body;
-
-    try {
-        await db.query("UPDATE users SET role = ? WHERE id = ?", [role, id]);
-        res.status(200).json({ message: "Rol de usuario actualizado exitosamente" });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Error en el servidor" });
-    }
-};
-
 // Habilitar o deshabilitar usuario
 exports.toggleUserStatus = async (req, res) => {
     const { id } = req.params;

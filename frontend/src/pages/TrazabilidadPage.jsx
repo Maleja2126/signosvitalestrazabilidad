@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { fetchTrazabilidad } from "../services/trazabilidadService";
 import { FaSearch, FaInfoCircle, FaCheck, FaTimes, FaFileExport, FaListAlt, FaFilter, FaArrowLeft } from "react-icons/fa"
 import DetalleTrazabilidadModal from "../components/DetalleTrazabilidadModal";
 import generatePDFTrazabilidad from "../services/generatePDFTrazabilidad";
@@ -21,30 +21,20 @@ const TrazabilidadPage = () => {
   const navigate = useNavigate();
   
   useEffect(() => {
-    const fetchTrazabilidad = async () => {
+    const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await axios.get("http://localhost:5000/api/traceability");
-        console.log("Datos recibidos:", response.data);
-        const data = response.data;
-
-        if (data.records && data.records.length > 0) {
-          setTrazabilidad(data.records);
-          setFilteredTrazabilidad(data.records);
-          setError(null);
-        } else {
-          setTrazabilidad([]);
-          setError(null);
-        }
+        const data = await fetchTrazabilidad();
+        setTrazabilidad(data);
+        setFilteredTrazabilidad(data);
       } catch (error) {
-        console.error("Error al cargar los registros de trazabilidad:", error);
-        setError("Hubo un error al cargar los registros.");
+        setError("Error al cargar los registros de trazabilidad.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchTrazabilidad();
+    fetchData();
   }, []);
 
   const handleSearch = () => {
@@ -107,47 +97,31 @@ const TrazabilidadPage = () => {
   };
 
   const handleExportarPDF = async (exportarTodo = false) => {
-    setGeneratingPDF(true);
-
-    let selectedData;
-    if (exportarTodo) {
-      selectedData = trazabilidad;
-    } else {
-      selectedData = Object.entries(selectedActions).flatMap(([userName, actionIds]) =>
-        trazabilidad.filter((item) => actionIds.includes(item.id))
-      );
-    }
+    const selectedData = exportarTodo
+        ? trazabilidad // Exporta todo
+        : Object.entries(selectedActions).flatMap(([userName, actionIds]) =>
+              trazabilidad.filter((item) => actionIds.includes(item.id))
+          );
 
     if (selectedData.length === 0) {
-      alert("No hay registros para exportar.");
-      setGeneratingPDF(false);
-      return;
+        alert("No hay registros seleccionados.");
+        return;
     }
-
-    // Obtener el rango de fechas de los datos seleccionados
-    const fechas = selectedData.map((item) => new Date(item.fecha_hora));
-    const fechaInicioRango = new Date(Math.min(...fechas)); // Fecha mínima
-    const fechaFinRango = new Date(Math.max(...fechas)); // Fecha máxima
-
-    // Obtener el nombre del usuario
-    const usuarioNombre = selectedData[0]?.usuario_nombre || "Desconocido";
 
     try {
-      await generatePDFTrazabilidad(
-        {
-          nombre: usuarioNombre,
-          fechaInicio: fechaInicioRango.toISOString(),
-          fechaFin: fechaFinRango.toISOString(),
-        },
-        selectedData
-      );
-      alert("PDF generado exitosamente.");
+        const usuarioInfo = {
+            nombre: selectedData[0]?.usuario_nombre || "Desconocido",
+            fechaInicio: new Date(Math.min(...selectedData.map((item) => new Date(item.fecha_hora)))).toISOString(),
+            fechaFin: new Date(Math.max(...selectedData.map((item) => new Date(item.fecha_hora)))).toISOString(),
+        };
+
+        await generatePDFTrazabilidad(usuarioInfo, selectedData);
+        alert("PDF generado exitosamente.");
     } catch (error) {
-      alert("Hubo un error al generar el PDF.");
-    } finally {
-      setGeneratingPDF(false);
+        console.error("Error al generar PDF:", error);
+        alert("Hubo un error al generar el PDF.");
     }
-  };
+};
 
   const handleClearFilters = () => {
     setFechaInicio(""); // Restablecer campo de fecha inicio

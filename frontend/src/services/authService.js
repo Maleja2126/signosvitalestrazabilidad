@@ -34,11 +34,6 @@ export const getUsers = async () => {
     return await axios.get(`${API_URL}/users`);
 };
 
-// Función para actualizar el rol de usuario (usada en el panel de administración)
-export const updateUserRole = async (id, role) => {
-    return await axios.patch(`${API_URL}/users/${id}`, { role });
-};
-
 // Función para habilitar/inhibir un usuario
 export const toggleUserStatus = async (id, isActive) => {
     return await axios.patch(`${API_URL}/users/${id}/status`, { is_active: isActive });

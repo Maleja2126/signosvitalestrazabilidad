@@ -363,7 +363,7 @@ exports.getPatientHistoryRecords = async (req, res) => {
 
     try {
         const [history] = await db.query(
-            "SELECT * FROM historial_signos_pacientes WHERE id_paciente = ? ORDER BY id_registro ASC, record_date DESC, record_time DESC",
+            "SELECT * FROM historial_signos_pacientes WHERE id_paciente = ? ORDER BY id_registro ASC",
             [idPaciente]
         );
 

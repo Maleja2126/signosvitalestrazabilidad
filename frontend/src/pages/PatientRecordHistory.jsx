@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { fetchPatientRecords } from "../services/patientService";
 import { FiPlusCircle, FiHome, FiFilter, FiDownload, FiEdit } from "react-icons/fi";
+import { FaTimes } from "react-icons/fa"
 import { MdOutlinePublishedWithChanges } from "react-icons/md";
 import { format } from "date-fns";
 import VitalSignsChart from "./VitalSignsChart";
@@ -9,7 +10,8 @@ import "jspdf-autotable"; // Importar el complemento para la tabla
 import 'react-toastify/dist/ReactToastify.css';
 import { toast } from "react-toastify";
 import generatePDF from "../services/generatePDF";
-import { getUserInfo } from '../services/authService';
+import Swal from "sweetalert2";
+import "sweetalert2/dist/sweetalert2.min.css";
 
 const PatientRecordHistory = () => {
     //Datos del paciente
@@ -137,8 +139,8 @@ const PatientRecordHistory = () => {
         // Filtrar los registros según las fechas
         let filtered = records.filter(record => {
             const recordDate = new Date(record.record_date);
-            const start = startDate ? new Date(startDate) : null;
-            const end = endDate ? new Date(endDate) : null;
+            const start = startDate ? new Date(`${startDate}T00:00:00`) : null;
+            const end = endDate ? new Date(`${endDate}T23:59:59`) : null;
             return (!start || recordDate >= start) && (!end || recordDate <= end);
         });
 
@@ -156,6 +158,11 @@ const PatientRecordHistory = () => {
 
         // Actualizar el estado de los registros filtrados
         setFilteredRecords(filteredWithVariables);
+    };
+    const handleClearFilters = () => {
+        setStartDate(""); // Restablecer campo de fecha inicio
+        setEndDate("");    // Restablecer campo de fecha fin
+        setFilteredRecords(records)
     };
     const toggleVariable = (variable) => {
         setSelectedVariables(prev =>
@@ -296,6 +303,7 @@ const PatientRecordHistory = () => {
     if (loading) {
         return <div className="flex justify-center items-center h-screen">Cargando...</div>;
     }
+    
     return (
         <div className="flex flex-col items-center min-h-screen bg-gray-100 p-9 overflow-auto">
             <h1 className="text-4xl font-bold mb-9">Historial del Paciente</h1>
@@ -315,7 +323,6 @@ const PatientRecordHistory = () => {
                         Paciente {patientInfo.status === "activo" ? "Activo" : "Inactivo"}
                     </span>
                 </div>
-
                 {/* Filtros */}
                 <div className="mb-4">
                     <div className="flex items-center mb-4">
@@ -332,7 +339,6 @@ const PatientRecordHistory = () => {
                             value={endDate}
                             onChange={(e) => setEndDate(e.target.value)}
                             className="p-2 border rounded"
-                            
                         />
                         <button
                             onClick={handleFilter}
@@ -340,10 +346,16 @@ const PatientRecordHistory = () => {
                         >
                             <FiFilter className="mr-2" /> Filtrar
                         </button>
+                        <button
+                            className="ml-4 bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 transition flex items-center space-x-2"
+                            onClick={handleClearFilters}
+                        >
+                            <FaTimes className="text-sm" />
+                            <span>Limpiar Filtros</span>
+                        </button>
                     </div>
-
-
                 </div>
+
                 <div>
                     <h3 className="font-bold">Variables para graficar:</h3>
                     <div className="flex space-x-7">
@@ -388,56 +400,92 @@ const PatientRecordHistory = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredRecords.map((record, index) => (
-                            <tr key={index} className="text-center">
-                                <td className="p-2 border">{record.id}</td>
+                        {filteredRecords.map((record, index) => {
+                            const recordDate = new Date(record.record_date); // Fecha del registro
+                            const currentDate = new Date(); // Fecha actual
+                            const isEditable = (currentDate - recordDate) / (1000 * 60 * 60 * 24) <= 1; // Diferencia en días
+                            const handleForceEdit = async (id) => {
+                                const result = await Swal.fire({
+                                    title: "¿Forzar edición?",
+                                    text: "Este registro no es editable porque tiene más de 1 día. ¿Quieres continuar?",
+                                    icon: "warning",
+                                    showCancelButton: true,
+                                    confirmButtonColor: "#d33",
+                                    cancelButtonColor: "#3085d6",
+                                    confirmButtonText: "Sí, editar",
+                                    cancelButtonText: "Cancelar",
+                                });
+                    
+                                if (result.isConfirmed) {
+                                    handleEditRecord(id);
+                                }
+                            };
+                            return (
+                                <tr key={index} className="text-center">
+                                    <td className="p-2 border">{record.id}</td>
 
-                                <td className="p-2 border">{format(new Date(record.record_date), "dd/MM/yyyy")}</td>
-                                <td className="p-2 border">{record.record_time}</td>
-                                <td className={`p-2 border ${getVitalSignBackground(ageGroup, 'pulso', record.pulso)}`}>
-                                    {record.pulso}
-                                </td>
-                                <td className={`p-2 border ${getVitalSignBackground(ageGroup, 'temperatura', record.temperatura)}`}>
-                                    {record.temperatura}
-                                </td>
-                                <td className={`p-2 border ${getVitalSignBackground(ageGroup, 'frecuencia_respiratoria', record.frecuencia_respiratoria)}`}>
-                                    {record.frecuencia_respiratoria}
-                                </td>
-                                <td className={`p-2 border ${getVitalSignBackground(ageGroup, 'presion_sistolica', record.presion_sistolica)}`}>
-                                    {record.presion_sistolica}
-                                </td>
-                                <td className={`p-2 border ${getVitalSignBackground(ageGroup, 'presion_diastolica', record.presion_diastolica)}`}>
-                                    {record.presion_diastolica}
-                                </td>
-                                <td className={`p-2 border ${getVitalSignBackground(ageGroup, 'presion_media', record.presion_media)}`}>
-                                    {record.presion_media}
-                                </td>
+                                    <td className="p-2 border">{format(new Date(record.record_date), "dd/MM/yyyy")}</td>
+                                    <td className="p-2 border">{record.record_time}</td>
+                                    <td className={`p-2 border ${getVitalSignBackground(ageGroup, 'pulso', record.pulso)}`}>
+                                        {record.pulso}
+                                    </td>
+                                    <td className={`p-2 border ${getVitalSignBackground(ageGroup, 'temperatura', record.temperatura)}`}>
+                                        {record.temperatura}
+                                    </td>
+                                    <td className={`p-2 border ${getVitalSignBackground(ageGroup, 'frecuencia_respiratoria', record.frecuencia_respiratoria)}`}>
+                                        {record.frecuencia_respiratoria}
+                                    </td>
+                                    <td className={`p-2 border ${getVitalSignBackground(ageGroup, 'presion_sistolica', record.presion_sistolica)}`}>
+                                        {record.presion_sistolica}
+                                    </td>
+                                    <td className={`p-2 border ${getVitalSignBackground(ageGroup, 'presion_diastolica', record.presion_diastolica)}`}>
+                                        {record.presion_diastolica}
+                                    </td>
+                                    <td className={`p-2 border ${getVitalSignBackground(ageGroup, 'presion_media', record.presion_media)}`}>
+                                        {record.presion_media}
+                                    </td>
 
-                                <td className={`p-2 border ${getVitalSignBackground(ageGroup, 'saturacion_oxigeno', record.saturacion_oxigeno)}`}>
-                                    {record.saturacion_oxigeno}
-                                </td>
+                                    <td className={`p-2 border ${getVitalSignBackground(ageGroup, 'saturacion_oxigeno', record.saturacion_oxigeno)}`}>
+                                        {record.saturacion_oxigeno}
+                                    </td>
 
-                                {/* Mostrar peso dependiendo de si es pediátrico o adulto */}
-                                <td className="p-2 border">
-                                    {['Recién nacido', 'Lactante temprano', 'Lactante mayor', 'Niño pequeño', 'Preescolar temprano', 'Preescolar tardío'].includes(ageGroup) ? record.peso_pediatrico : record.peso_adulto}
-                                </td>
-                                {/* Observaciones */}
-                                <td className="p-2 border">{record.talla || "-"}</td>
-                                <td className="p-2 border">{record.observaciones || "-"}</td>
-                                {role === "jefe" && (
-                                    <td className="p-2 border">{record.responsable_signos || "No disponible"}</td>)}
-                                {/* Botón de editar */}
-                                <td className="p-2 border">
-                                    <button
-                                        onClick={() => handleEditRecord(record.id)}
-                                        className="flex items-center px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition"
-                                    >
-                                        <FiEdit className="mr-1" />
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
+                                    {/* Mostrar peso dependiendo de si es pediátrico o adulto */}
+                                    <td className="p-2 border">
+                                        {['Recién nacido', 'Lactante temprano', 'Lactante mayor', 'Niño pequeño', 'Preescolar temprano', 'Preescolar tardío'].includes(ageGroup) ? record.peso_pediatrico : record.peso_adulto}
+                                    </td>
+                                    {/* Observaciones */}
+                                    <td className="p-2 border">{record.talla || "-"}</td>
+                                    <td className="p-2 border">{record.observaciones || "-"}</td>
+                                    {role === "jefe" && (
+                                        <td className="p-2 border">{record.responsable_signos || "No disponible"}</td>)}
+                                    {/* Botón de editar */}
+
+                                    
+                <td className="p-2 border">
+                    {isEditable ? (
+                        <button
+                            onClick={() => handleEditRecord(record.id)}
+                            className="flex items-center px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition"
+                        >
+                            <FiEdit className="mr-1" />
+                        </button>
+                    ) : (
+                        <div className="flex flex-col items-center">
+                            <span className="text-gray-500 italic mb-2">No editable</span>
+                            <button
+                                onClick={() => handleForceEdit(record.id)}
+                                className="flex items-center px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition"
+                            >
+                                <FiEdit className="mr-1" /> Forzar edición
+                            </button>
+                        </div>
+                    )}
+                                    </td>
+                                </tr>
+                            );
+                        })}
                     </tbody>
+
                 </table>
                 {/* Botones de acción */}
                 <div className="flex justify-between w-full max-w-7xl mt-4">

@@ -35,7 +35,11 @@ const RegisterUser = () => {
         const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+{}|:"<>?~`.]).{8,16}$/;
         return regex.test(password);
     };
-
+    const validateNumeroID = (numeroIdentificacion) => {
+        const regex = /^\d{6,15}$/;
+        return regex.test(numeroIdentificacion);
+    }
+    
     const handleRegister = async (e) => {
         e.preventDefault();
 
@@ -46,6 +50,10 @@ const RegisterUser = () => {
 
         if (!validatePassword(password)) {
             toast.error("La contraseña debe tener entre 8 y 16 caracteres, incluyendo al menos una mayúscula, una minúscula, un número y un carácter especial.");
+            return;
+        }
+        if (!validateNumeroID(numeroIdentificacion)) {
+            toast.error("El número de identificación debe contener solo números y debe contener minimo 6 digitos");
             return;
         }
 

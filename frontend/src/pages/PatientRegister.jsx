@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { registerPatient } from "../services/patientService";
 import { toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-import { FaUserPlus , FaClipboard } from 'react-icons/fa';  // Usamos FaClipboard para el icono de planilla
-import { FiHome} from 'react-icons/fi';  // Usamos FaClipboard para el icono de planilla
+import { FaUserPlus, FaClipboard } from 'react-icons/fa';  // Usamos FaClipboard para el icono de planilla
+import { FiHome } from 'react-icons/fi';  // Usamos FaClipboard para el icono de planilla
 const PatientRegister = () => {
     const navigate = useNavigate();
     const [primerNombre, setprimerNombre] = useState("");
@@ -62,11 +62,14 @@ const PatientRegister = () => {
         const group = calculateAgeGroup(date);
         setAgeGroup(group);
         // Cambiar tipo de identificación según la edad
-    if (age !== null) {
-        settipoIdentificacion(age > 20 ? "cédula de ciudadanía" : "tarjeta de identidad");
-    }
+        if (age !== null) {
+            settipoIdentificacion(age > 20 ? "cédula de ciudadanía" : "tarjeta de identidad");
+        }
     };
-
+    const validateNumeroID = (numeroIdentificacion) => {
+        const regex = /^\d{6,15}$/;
+        return regex.test(numeroIdentificacion);
+    }
     const handleRegister = async (e) => {
         e.preventDefault();
 
@@ -77,7 +80,11 @@ const PatientRegister = () => {
                 toast.error("No se encontró un token. Por favor, inicia sesión.");
                 return;
             }
-    
+            if (!validateNumeroID(numeroIdentificacion)) {
+                toast.error("El número de identificación debe contener solo números y debe contener minimo 6 digitos");
+                return;
+            }
+
             await registerPatient({
                 primer_nombre: primerNombre,
                 segundo_nombre: segundoNombre,
@@ -90,8 +97,8 @@ const PatientRegister = () => {
                 status,
                 age_group: ageGroup
             },
-            token // Pasa el token al servicio
-        );
+                token // Pasa el token al servicio
+            );
             toast.success("Paciente registrado exitosamente!");
             navigate("/dashboard");
         } catch (err) {
@@ -173,7 +180,7 @@ const PatientRegister = () => {
                         className="w-full p-3 border border-gray-300 rounded col-span-2"
                         max={currentDate} // Limitar a la fecha actual
                     />
-                    
+
                     <input
                         type="text"
                         placeholder="Ubicación (habitación)"
@@ -190,12 +197,12 @@ const PatientRegister = () => {
                         <option value="inactivo">Inactivo</option>
                     </select>
                 </div>
-                
+
                 {/* Mostrar Edad y Tipo de Paciente */}
                 <div className="col-span-2 mb-4">
-                        <p>Edad: {displayAge()}</p>
-                        <p>Tipo de paciente: {ageGroup}</p>
-                    </div>
+                    <p>Edad: {displayAge()}</p>
+                    <p>Tipo de paciente: {ageGroup}</p>
+                </div>
                 <div className="flex justify-center gap-6 mt-4">
                     <button
                         type="button"

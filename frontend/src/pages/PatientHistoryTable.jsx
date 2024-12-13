@@ -87,25 +87,25 @@ const PatientHistoryPage = ({ token }) => {
 
     const handleFilterHistory = () => {
         let filtered = history;
-    
+
         // Convertir fechas de inicio y fin a formato UTC para comparación
-        const start = startDate ? new Date(startDate).setHours(0, 0, 0, 0) : null;
-        const end = endDate ? new Date(endDate).setHours(23, 59, 59, 999) : null;
-    
+        const start = startDate ? new Date(`${startDate}T00:00:00`) : null;
+        const end = endDate ? new Date(`${endDate}T23:59:59`) : null;
+
         // Aplicar el filtro
         filtered = filtered.filter(record => {
             // Convertir la fecha del registro a UTC
             const recordDate = new Date(record.created_at).getTime();
-    
+
             // Comparar con los rangos de fechas ajustados
             return (
                 (!start || recordDate >= start) &&
                 (!end || recordDate <= end)
             );
         });
-    
+
         setFilteredHistory(filtered);
-    };    
+    };
 
     const handleSearchIdChange = (e) => {
         const value = e.target.value.trim();
@@ -325,9 +325,13 @@ const PatientHistoryPage = ({ token }) => {
                                                     onChange={() => handleSelectRecord(currentRecord.id_registro)}
                                                 />
                                             </td>
-                                            <td className="p-3 border">{currentRecord.id_registro}</td>
-                                            <td className="p-3 border">{formatDate(currentRecord.record_date)}</td>
-                                            <td className="p-3 border">{currentRecord.record_time}</td>
+                                            <td className="p-3 border">{currentRecord.id_registro}</td><td className={`p-3 border ${getChangedClass("record_date", currentRecord, prevRecord)}`}>
+                                                {formatDate(currentRecord.record_date)}
+                                            </td>
+                                            <td className={`p-3 border ${getChangedClass("record_time", currentRecord, prevRecord)}`}>
+                                                {currentRecord.record_time}
+                                            </td>
+
                                             <td className={`p-3 border ${getChangedClass("pulso", currentRecord, prevRecord)}`}>{currentRecord.pulso}</td>
                                             <td className={`p-3 border ${getChangedClass('temperatura', currentRecord, prevRecord)}`}>{currentRecord.temperatura}</td>
                                             <td className={`p-3 border ${getChangedClass('frecuencia_respiratoria', currentRecord, prevRecord)}`}>{currentRecord.frecuencia_respiratoria}</td>

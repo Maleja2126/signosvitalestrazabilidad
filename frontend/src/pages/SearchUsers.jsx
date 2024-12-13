@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getUsers, updateUserRole, toggleUserStatus, deleteUser } from "../services/authService";
+import { getUsers, toggleUserStatus, deleteUser } from "../services/authService";
 import { FiHome, FiTrash2, FiUserCheck, FiUserX } from "react-icons/fi";
 import { MdOutlineEdit } from "react-icons/md";
 import Swal from "sweetalert2";
@@ -30,18 +30,6 @@ const SearchUsers = () => {
         fetchUsers();
     }, []);
 
-    const handleRoleChange = async (id, newRole) => {
-        try {
-            await updateUserRole(id, newRole);
-            setUsers((prevUsers) =>
-                prevUsers.map((user) =>
-                    user.id === id ? { ...user, role: newRole } : user
-                )
-            );
-        } catch (error) {
-            setError("Error al actualizar el rol del usuario");
-        }
-    };
 
     const handleToggleStatus = async (id, isActive) => {
         try {
@@ -100,7 +88,6 @@ const SearchUsers = () => {
                                     <th className="p-3 text-center text-sm break-words">Correo</th>
                                     <th className="p-3 text-center text-sm break-words">Rol</th>
                                     <th className="p-3 text-center text-sm break-words">Estado</th>
-                                    <th className="p-3 text-center text-sm break-words">Cambiar rol</th>
                                     <th className="p-3 text-center text-sm break-words">Acciones</th>
                                     <th className="p-3 text-center text-sm break-words">Editar</th>
                                 </tr>
@@ -114,19 +101,6 @@ const SearchUsers = () => {
                                         <td className="p-4 text-center text-sm truncate">{roleNames[user.role]}</td>
                                         <td className="p-4 text-center text-sm truncate">   
                                             {user.is_active ? "Activo" : "Inactivo"}
-                                        </td>
-                                        <td className="p-4 text-center text-sm">
-                                            <select
-                                                value={user.role}
-                                                onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                                                className="p-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                            >
-                                                {Object.entries(roleNames).map(([value, label]) => (
-                                                    <option key={value} value={value}>
-                                                        {label}
-                                                    </option>
-                                                ))}
-                                            </select>
                                         </td>
                                         <td className="p-3 text-center flex justify-center space-x-1 text-sm">
                                             <button

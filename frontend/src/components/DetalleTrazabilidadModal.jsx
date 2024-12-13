@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Modal from "react-modal";
+import { getTrazabilidadById } from "../services/trazabilidadService";
 
 // Configuración para accesibilidad
 Modal.setAppElement("#root");
@@ -20,28 +21,30 @@ const DetalleTrazabilidadModal = ({ isOpen, onClose, trazabilidadId }) => {
 
   // Formateo de fechas
   const formatFechaGeneral = (fecha, includeTime = false) => {
-    // Verifica si la fecha existe y es válida
     if (!fecha) return "No disponible";
+
+    // Detectar y convertir fechas DD/MM/YYYY a formato ISO si es necesario
+    if (typeof fecha === "string" && fecha.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
+        const [day, month, year] = fecha.split("/");
+        fecha = `${year}-${month}-${day}`;
+    }
 
     const date = new Date(fecha);
 
     if (isNaN(date.getTime())) {
-      // Valida si el valor se pudo convertir a una fecha válida
-      return "No disponible";
+        return "No disponible";
     }
 
-    // Formatea la fecha
-    return date.toLocaleString("es-ES", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      ...(includeTime && {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-      }),
-    });
-  };
+    // Formatear a DD/MM/YYYY
+    const day = String(date.getDate()).padStart(2, "0"); // Agrega cero inicial al día
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // Agrega cero inicial al mes
+    const year = date.getFullYear();
+    const time = includeTime
+        ? ` ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}:${String(date.getSeconds()).padStart(2, "0")}`
+        : "";
+
+    return `${day}/${month}/${year}${time}`;
+};
 
   // Formateo de cambios (anterior/nuevo)
   const formatCambios = (value) => {
@@ -66,7 +69,8 @@ const DetalleTrazabilidadModal = ({ isOpen, onClose, trazabilidadId }) => {
 
   // Efecto para cargar trazabilidad al abrir el modal
   useEffect(() => {
-    let isMounted = true; // Variable para evitar actualizaciones tras desmontaje
+    let isMounted = true;
+
     const fetchTrazabilidad = async () => {
       if (!trazabilidadId) {
         setTrazabilidad(null);
@@ -74,16 +78,7 @@ const DetalleTrazabilidadModal = ({ isOpen, onClose, trazabilidadId }) => {
       }
 
       try {
-        const response = await fetch(
-          `http://localhost:5000/api/traceability/${trazabilidadId}`
-        );
-
-        if (!response.ok) {
-          throw new Error(`Error del servidor: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-
+        const data = await getTrazabilidadById(trazabilidadId);
         const datosAntiguos = parseDatos(data.datos_antiguos);
         const datosNuevos = parseDatos(data.datos_nuevos);
 
@@ -97,16 +92,15 @@ const DetalleTrazabilidadModal = ({ isOpen, onClose, trazabilidadId }) => {
         }
       } catch (err) {
         console.error("Error al cargar los detalles de trazabilidad:", err);
-        if (isMounted)
-          setError(
-            "No se pudo cargar la información de trazabilidad. Verifica la conexión con el servidor."
-          );
+        if (isMounted) {
+          setError("No se pudo cargar la información de trazabilidad.");
+        }
       }
     };
 
     fetchTrazabilidad();
     return () => {
-      isMounted = false; // Limpieza en desmontaje
+      isMounted = false;
     };
   }, [trazabilidadId]);
 
