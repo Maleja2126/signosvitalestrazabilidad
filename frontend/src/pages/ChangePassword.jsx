@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { updatePassword } from "../services/authService";
 import { FaLock, FaEye, FaEyeSlash } from "react-icons/fa";  // Iconos de candado y ojo
-import resetPasswordBackground from "./imagen restablecer contraseña.jpg"; // Ruta de la imagen de fondo
 
 const ChangePassword = () => {
     const { token } = useParams();

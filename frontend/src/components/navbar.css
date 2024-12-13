@@ -73,7 +73,7 @@
     text-align: left; /* Alinea el texto del botón hacia la izquierda. */
     cursor: pointer; /* Cambia el cursor a una mano al pasar sobre el botón. */
     font-size: 14px; /* Establece el tamaño de la fuente del botón. */
-    color: #333; /* Cambia el color del texto a gris oscuro. */
+    color: #000000; /* Cambia el color del texto a negro. */
     display: flex; /* Crea un contenedor flexible dentro del botón. */
     align-items: center; /* Centra verticalmente los elementos dentro del botón. */
   }
@@ -118,12 +118,12 @@
   }
   
   .modal-btn.yes {
-    background-color: #28a745; /* Cambia el fondo del botón "Sí" a verde. */
+    background-color: #e41b1b; /* Cambia el fondo del botón "Sí" a verde. */
     color: white; /* Cambia el color del texto del botón "Sí" a blanco. */
   }
   
   .modal-btn.no {
-    background-color: #dc3545; /* Cambia el fondo del botón "No" a rojo. */
+    background-color: #1f8514; /* Cambia el fondo del botón "No" a rojo. */
     color: white; /* Cambia el color del texto del botón "No" a blanco. */
   }
   

@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
-import HomePage from './pages/HomePage'; // Importa la nueva página de inicio
+import HomePage from './pages/HomePage'; 
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ResetPassword from './pages/ResetPassword';
@@ -15,8 +15,8 @@ import PatientRecordHistory from './pages/PatientRecordHistory';
 import PatientGraphs from './pages/PatientGraphs';
 import ProtectedRoute from './pages/ProtectedRoute';
 import Layout from './components/Layout';
-import RegisterUser from './pages/RegisterUser'; // Importamos el nuevo componente de registro de usuario
-import SearchUsers from './pages/SearchUsers'; // Importamos el nuevo componente de tabla de usuarios
+import RegisterUser from './pages/RegisterUser'; 
+import SearchUsers from './pages/SearchUsers'; 
 import EditPatient from './pages/EditPatient';
 import EditUser from './pages/EditUser';
 import PatientHistoryPage from "./pages/PatientHistoryTable";

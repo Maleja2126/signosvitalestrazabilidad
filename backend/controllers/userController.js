@@ -62,13 +62,17 @@ exports.updateUserDetails = async (req, res) => {
     const { username, email, role, numero_identificacion } = req.body;
 
     try {
-        const query = `UPDATE users SET username = ?, email = ?, role = ?, numero_identificacion = ? WHERE id = ?`;
+        // Verificar si el usuario existe
+        const checkUserQuery = `SELECT * FROM users WHERE id = ?`;
+        const [user] = await db.query(checkUserQuery, [id]);
 
-        const [result] = await db.query(query, [username, email, role, numero_identificacion, id]);
-
-        if (result.affectedRows === 0) {
+        if (user.length === 0) {
             return res.status(404).json({ message: "Usuario no encontrado" });
         }
+
+        // Actualizar usuario
+        const query = `UPDATE users SET username = ?, email = ?, role = ?, numero_identificacion = ? WHERE id = ?`;
+        const [result] = await db.query(query, [username, email, role, numero_identificacion, id]);
 
         res.status(200).json({ message: "Usuario actualizado exitosamente" });
     } catch (error) {

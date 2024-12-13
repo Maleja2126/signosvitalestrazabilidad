@@ -67,10 +67,17 @@ export const fetchUserInfo = async (idUsuario) => {
 // Function to update user details
 export const updateUser = async (idUsuario, updatedData) => {
     try {
+        console.log("Datos enviados:", updatedData); // Log para depuración
         const response = await axios.put(`${API_URL}/users/${idUsuario}`, updatedData);
         return response.data;
     } catch (error) {
-        throw new Error("Error al actualizar el usuario: " + error.message);
+        if (error.response) {
+            console.error("Error del servidor:", error.response.data || error.response.statusText);
+            throw new Error(`Error del servidor: ${error.response.data.message || error.response.statusText}`);
+        } else {
+            console.error("Error de red:", error.message);
+            throw new Error("Error al actualizar el usuario: " + error.message);
+        }
     }
 };
 

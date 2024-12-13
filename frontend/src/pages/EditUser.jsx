@@ -51,13 +51,15 @@ const EditUser = () => {
                 role,
                 numero_identificacion: numeroIdentificacion,
             };
-            await updateUser(idUsuario, userData);
-            toast.success("Usuario actualizado exitosamente");
-            navigate("/search-user");
+            await updateUser(idUsuario, userData); // Realiza la actualización del usuario
+            toast.success(`Usuario "${username}" actualizado correctamente.`); // Notifica el éxito
+            setTimeout(() => {
+                navigate("/search-user");
+            }, 2000); // Redirige después de 2 segundos
         } catch (error) {
-            toast.error("Error al actualizar el usuario: " + error.message);
+            toast.error("Error al actualizar el usuario: " + error.message); // Notifica el error
         }
-    };
+    };    
 
     const handleGoBack = () => {
         navigate("/search-user");

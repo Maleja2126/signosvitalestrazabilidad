@@ -32,18 +32,37 @@ const SearchUsers = () => {
 
 
     const handleToggleStatus = async (id, isActive) => {
-        try {
-            await toggleUserStatus(id, !isActive);
-            setUsers((prevUsers) =>
-                prevUsers.map((user) =>
-                    user.id === id ? { ...user, is_active: !isActive } : user
-                )
-            );
-        } catch (error) {
-            setError("Error al actualizar el estado del usuario");
+        const userToToggle = users.find((user) => user.id === id);
+        if (!userToToggle) return;
+    
+        const action = isActive ? "desactivar" : "activar";
+        const result = await Swal.fire({
+            title: `¿Estás seguro?`,
+            text: `Estás a punto de ${action} al usuario "${userToToggle.username}".`,
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: `Sí, ${action}`,
+            cancelButtonText: "Cancelar",
+        });
+    
+        if (result.isConfirmed) {
+            try {
+                await toggleUserStatus(id, !isActive);
+                setUsers((prevUsers) =>
+                    prevUsers.map((user) =>
+                        user.id === id ? { ...user, is_active: !isActive } : user
+                    )
+                );
+                toast.success(`Usuario "${userToToggle.username}" ${isActive ? "desactivado" : "activado"} correctamente.`);
+            } catch (error) {
+                setError("Error al actualizar el estado del usuario.");
+                toast.error("Ocurrió un error al intentar cambiar el estado del usuario.");
+            }
         }
     };
-
+    
     const handleDeleteUser = async (id) => {
         const userToDelete = users.find((user) => user.id === id);
         if (!userToDelete) return;
@@ -73,7 +92,8 @@ const SearchUsers = () => {
     return (
         <div className="flex flex-col items-center justify-start h-screen bg-gray-100 p-6">
             <ToastContainer />
-            <h1 className="text-3xl font-bold mb-3 mt-10">Usuarios Registrados</h1>
+            <h1 className="text-4xl font-bold mb-3 mt-10 text-blue-800">Usuarios Registrados</h1>
+
             {error && <p className="text-red-500">{error}</p>}
 
             <div className="w-full max-w-6xl overflow-x-auto mt-4">
@@ -88,19 +108,28 @@ const SearchUsers = () => {
                                     <th className="p-3 text-center text-sm break-words">Correo</th>
                                     <th className="p-3 text-center text-sm break-words">Rol</th>
                                     <th className="p-3 text-center text-sm break-words">Estado</th>
-                                    <th className="p-3 text-center text-sm break-words">Acciones</th>
                                     <th className="p-3 text-center text-sm break-words">Editar</th>
+                                    <th className="p-3 text-center text-sm break-words">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody className="overflow-y-auto max-h-[400px]">
                                 {users.map((user) => (
-                                    <tr key={user.id} className="border-b hover:bg-gray-100 transition-all">
+                                    <tr key={user.id} className="border-b hover:bg-black-100 transition-all">
                                         <td className="p-4 text-center text-sm truncate">{user.username}</td>
                                         <td className="p-4 text-center text-sm truncate">{user.numero_identificacion}</td>
                                         <td className="p-4 text-center text-sm truncate">{user.email}</td>
                                         <td className="p-4 text-center text-sm truncate">{roleNames[user.role]}</td>
                                         <td className="p-4 text-center text-sm truncate">   
                                             {user.is_active ? "Activo" : "Inactivo"}
+                                        </td>
+                                        <td className="p-1 text-center text-sm">
+                                            <span
+                                                onClick={() => navigate(`/edit-user/${user.id}`)}
+                                                className="cursor-pointer text-2xl hover:scale-110 transition-transform"
+                                                title="Editar usuario"
+                                            >
+                                                &#9998;
+                                            </span>
                                         </td>
                                         <td className="p-3 text-center flex justify-center space-x-1 text-sm">
                                             <button
@@ -124,15 +153,6 @@ const SearchUsers = () => {
                                             >
                                                 <FiTrash2 className="mr-1" /> Eliminar
                                             </button>
-                                        </td>
-                                        <td className="p-1 text-center text-sm">
-                                            <span
-                                                onClick={() => navigate(`/edit-user/${user.id}`)}
-                                                className="cursor-pointer text-2xl hover:scale-110 transition-transform"
-                                                title="Editar usuario"
-                                            >
-                                                &#9998;
-                                            </span>
                                         </td>
                                     </tr>
                                 ))}
