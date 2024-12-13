@@ -34,7 +34,7 @@ const SearchUsers = () => {
     const handleToggleStatus = async (id, isActive) => {
         const userToToggle = users.find((user) => user.id === id);
         if (!userToToggle) return;
-    
+
         const action = isActive ? "desactivar" : "activar";
         const result = await Swal.fire({
             title: `¿Estás seguro?`,
@@ -46,7 +46,7 @@ const SearchUsers = () => {
             confirmButtonText: `Sí, ${action}`,
             cancelButtonText: "Cancelar",
         });
-    
+
         if (result.isConfirmed) {
             try {
                 await toggleUserStatus(id, !isActive);
@@ -62,7 +62,7 @@ const SearchUsers = () => {
             }
         }
     };
-    
+
     const handleDeleteUser = async (id) => {
         const userToDelete = users.find((user) => user.id === id);
         if (!userToDelete) return;
@@ -90,83 +90,88 @@ const SearchUsers = () => {
     };
 
     return (
-        <div className="flex flex-col items-center justify-start h-screen bg-gray-100 p-6">
+        <div className="flex flex-col items-center justify-start min-h-screen bg-white-50 p-3">
             <ToastContainer />
             <h1 className="text-4xl font-bold mb-3 mt-10 text-blue-800">Usuarios Registrados</h1>
-
             {error && <p className="text-red-500">{error}</p>}
 
-            <div className="w-full max-w-6xl overflow-x-auto mt-4">
-                {/* Ajustamos el ancho del contenedor para que no ocupe toda la pantalla */}
-                <div className="bg-white shadow-xl rounded-lg border border-gray-200">
-                    <div className="overflow-x-auto max-h-[500px]">
-                        <table className="min-w-full table-auto border-collapse table-fixed">
-                            <thead className="bg-blue-600 text-white sticky top-0 z-10">
-                                <tr>
-                                    <th className="p-3 text-center text-sm break-words">Nombre</th>
-                                    <th className="p-3 text-center text-sm break-words">Cédula</th>
-                                    <th className="p-3 text-center text-sm break-words">Correo</th>
-                                    <th className="p-3 text-center text-sm break-words">Rol</th>
-                                    <th className="p-3 text-center text-sm break-words">Estado</th>
-                                    <th className="p-3 text-center text-sm break-words">Editar</th>
-                                    <th className="p-3 text-center text-sm break-words">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody className="overflow-y-auto max-h-[400px]">
-                                {users.map((user) => (
-                                    <tr key={user.id} className="border-b hover:bg-black-100 transition-all">
-                                        <td className="p-4 text-center text-sm truncate">{user.username}</td>
-                                        <td className="p-4 text-center text-sm truncate">{user.numero_identificacion}</td>
-                                        <td className="p-4 text-center text-sm truncate">{user.email}</td>
-                                        <td className="p-4 text-center text-sm truncate">{roleNames[user.role]}</td>
-                                        <td className="p-4 text-center text-sm truncate">   
+            <div className="w-full max-w-7xl overflow-auto mt-4" style={{ scrollbarGutter: "stable" }}>
+                <div className="bg-white shadow-2xl rounded-lg border border-gray-200 max-h-[calc(100vh-200px)]">
+                    <table className="min-w-full table-fixed border-collapse text-black-700">
+                        <thead className="bg-gradient-to-r from-blue-700 to-blue-500 text-white sticky top-0 z-10 shadow-md">
+                            <tr>
+                                <th className="p-4 text-center text-sm font-semibold w-1/6">Nombre</th>
+                                <th className="p-4 text-center text-sm font-semibold w-1/6">Cédula</th>
+                                <th className="p-4 text-center text-sm font-semibold w-1/4">Correo</th>
+                                <th className="p-4 text-center text-sm font-semibold w-1/6">Rol</th>
+                                <th className="p-4 text-center text-sm font-semibold w-1/8">Estado</th>
+                                <th className="p-4 text-center text-sm font-semibold w-1/12">Editar</th>
+                                <th className="p-4 text-center text-sm font-semibold w-1/6">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody className="bg-gray-50 divide-y divide-gray-200">
+                            {users.map((user, index) => (
+                                <tr
+                                    key={user.id}
+                                    className={`h-16 border-b ${index % 2 === 0 ? "bg-gray-100" : "bg-white"
+                                        } hover:bg-gray-200 transition-colors`}
+                                >
+                                    <td className="p-4 text-center text-sm font-medium">{user.username}</td>
+                                    <td className="p-4 text-center text-sm">{user.numero_identificacion}</td>
+                                    <td className="p-4 text-center text-sm">{user.email}</td>
+                                    <td className="p-4 text-center text-sm">{roleNames[user.role]}</td>
+                                    <td className="p-4 text-center text-sm">
+                                        <span
+                                            className={`inline-block px-4 py-2 rounded-full text-sm font-semibold ${user.is_active ? "bg-green-500 text-white shadow-lg" : "bg-red-500 text-white shadow-lg"
+                                                }`}
+                                        >
                                             {user.is_active ? "Activo" : "Inactivo"}
-                                        </td>
-                                        <td className="p-1 text-center text-sm">
-                                            <span
-                                                onClick={() => navigate(`/edit-user/${user.id}`)}
-                                                className="cursor-pointer text-2xl hover:scale-110 transition-transform"
-                                                title="Editar usuario"
-                                            >
-                                                &#9998;
-                                            </span>
-                                        </td>
-                                        <td className="p-3 text-center flex justify-center space-x-1 text-sm">
-                                            <button
-                                                onClick={() => handleToggleStatus(user.id, user.is_active)}
-                                                className={`flex items-center p-3 text-white rounded text-xs ${user.is_active ? "bg-gray-500" : "bg-green-500"
-                                                    } hover:bg-opacity-80 transition-all`}
-                                            >
-                                                {user.is_active ? (
-                                                    <>
-                                                        <FiUserX className="mr-1" /> Desactivar
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <FiUserCheck className="mr-1" /> Activar
-                                                    </>
-                                                )}
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeleteUser(user.id)}
-                                                className="flex items-center p-1 bg-red-500 text-white rounded text-xs hover:bg-red-600 transition-all"
-                                            >
-                                                <FiTrash2 className="mr-1" /> Eliminar
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                        </span>
+                                    </td>
+                                    <td className="p-4 text-center">
+                                        <span
+                                            onClick={() => navigate(`/edit-user/${user.id}`)}
+                                            className="inline-flex items-center justify-center w-10 h-10 bg-gray-100 rounded-full text-blue-600 hover:text-blue-800 hover:bg-blue-200 hover:scale-110 transition-transform cursor-pointer"
+                                            title="Editar usuario"
+                                        >
+                                            <MdOutlineEdit size={20} />
+                                        </span>
+                                    </td>
+                                    <td className="p-4 flex justify-center gap-4">
+                                        <button
+                                            onClick={() => handleToggleStatus(user.id, user.is_active)}
+                                            className={`flex items-center px-4 py-3 text-sm font-bold rounded-full shadow-lg transition ${user.is_active ? "bg-gray-600 text-white hover:bg-gray-700" : "bg-green-600 text-white hover:bg-green-700"
+                                                }`}
+                                        >
+                                            {user.is_active ? (
+                                                <>
+                                                    <FiUserX className="mr-2" size={18} /> Desactivar
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <FiUserCheck className="mr-1" size={18} /> Activar
+                                                </>
+                                            )}
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteUser(user.id)}
+                                            className="flex items-center px-4 py-3 bg-red-600 text-white rounded-full text-sm font-bold shadow-lg hover:bg-red-700 transition"
+                                        >
+                                            <FiTrash2 className="mr-2" size={18} /> Eliminar
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
             <button
                 onClick={() => navigate("/admin-panel")}
-                className="mt-4 flex items-center px-4 py-2 bg-blue-500 text-white font-bold rounded hover:bg-blue-600 transition"
+                className="mt-5 flex items-center px-5 py-3 bg-blue-500 text-white font-bold rounded-full shadow-lg hover:bg-blue-600 transition"
             >
-                <FiHome className="mr-2" /> Volver al Panel
+                <FiHome className="mr-3" /> Volver al Panel
             </button>
         </div>
     );

@@ -67,19 +67,15 @@ export const fetchUserInfo = async (idUsuario) => {
 // Function to update user details
 export const updateUser = async (idUsuario, updatedData) => {
     try {
-        console.log("Datos enviados:", updatedData); // Log para depuración
         const response = await axios.put(`${API_URL}/users/${idUsuario}`, updatedData);
+        console.log("Respuesta de la API:", response.data);
         return response.data;
     } catch (error) {
-        if (error.response) {
-            console.error("Error del servidor:", error.response.data || error.response.statusText);
-            throw new Error(`Error del servidor: ${error.response.data.message || error.response.statusText}`);
-        } else {
-            console.error("Error de red:", error.message);
-            throw new Error("Error al actualizar el usuario: " + error.message);
-        }
+        console.error("Error en updateUser:", error.response?.data || error.message);
+        throw new Error(error.response?.data?.message || "Error al actualizar usuario");
     }
 };
+
 
 // Función para actualizar la foto de perfil
 export const updateProfileImage = async (formData) => {
