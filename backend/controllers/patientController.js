@@ -30,6 +30,16 @@ exports.getPatients = async (req, res) => {
     }
 };
 
+// Función para formatear fechas a DD/MM/YYYY
+const formatFecha = (fecha) => {
+    const date = new Date(fecha);
+    if (isNaN(date.getTime())) return fecha; // Devuelve la fecha original si no es válida
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+};
+
 // Función para registrar un paciente
 exports.registerPatient = async (req, res) => {
     const {
@@ -97,11 +107,11 @@ exports.registerPatient = async (req, res) => {
                 primer_apellido,
                 segundo_apellido,
                 numero_identificacion,
-                fecha_nacimiento,
+                fecha_nacimiento: formatFecha(fecha_nacimiento), // Formato DD/MM/YYYY
                 tipo_identificacion,
                 ubicacion,
                 status: status || 'activo',
-                created_at,
+                created_at: formatFecha(created_at), // Formato DD/MM/YYYY
                 age_group,
                 responsable_username,
             }
@@ -117,7 +127,7 @@ exports.registerPatient = async (req, res) => {
                 responsable_username, // Nombre del usuario
                 'Creación', // Acción
                 result.insertId, // ID del paciente
-                JSON.stringify(trazabilidad.datos_creados), // Datos creados
+                JSON.stringify(trazabilidad.datos_creados), // Datos creados con fechas formateadas
                 new Date(), // Fecha y hora
                 'Paciente' // Tipo de acción
             ]
@@ -384,6 +394,21 @@ exports.logDownloadAction = async (req, res) => {
 
         const paciente = patient[0];
 
+        // Función para formatear fecha manualmente a DD/MM/YYYY
+        const formatFechaNacimiento = (fecha) => {
+            if (!fecha) return "No disponible";
+
+            const date = new Date(fecha);
+
+            if (isNaN(date.getTime())) return "No disponible";
+
+            const day = String(date.getDate()).padStart(2, "0");
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const year = date.getFullYear();
+
+            return `${day}/${month}/${year}`;
+        };
+
         // Formatear datos antes de enviarlos al frontend
         const datosFormateados = {
             primer_nombre: paciente.primer_nombre,
@@ -394,9 +419,9 @@ exports.logDownloadAction = async (req, res) => {
             tipo_identificacion: paciente.tipo_identificacion,
             ubicacion: paciente.ubicacion,
             status: paciente.status,
-            created_at: new Date(paciente.created_at).toLocaleString("es-ES"), 
-            fecha_nacimiento: new Date(paciente.fecha_nacimiento).toLocaleDateString("es-ES"),
-            age_group: paciente.age_group, 
+            created_at: new Date(paciente.created_at).toLocaleString("es-ES"),
+            fecha_nacimiento: formatFechaNacimiento(paciente.fecha_nacimiento),
+            age_group: paciente.age_group,
             responsable_username: paciente.responsable_username,
         };
 
@@ -420,7 +445,7 @@ exports.logDownloadAction = async (req, res) => {
         res.status(200).json({
             message: "Acción de descarga registrada.",
             usuario_nombre: req.user.username,
-            paciente: datosFormateados, // Enviar datos formateados
+            paciente: datosFormateados,
         });
 
     } catch (error) {

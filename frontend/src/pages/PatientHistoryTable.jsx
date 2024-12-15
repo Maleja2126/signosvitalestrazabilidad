@@ -4,6 +4,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { FiPlusCircle, FiHome, FiX, FiDownload, FiEdit } from "react-icons/fi";
 import "jspdf-autotable";
 import { generatePatientPDF } from "../services/generatePatientPDF";
+import { toast } from 'react-toastify';  // Importar toast
+import 'react-toastify/dist/ReactToastify.css';  // Importar estilos
+import Swal from 'sweetalert2';  // Importa SweetAlert2
 
 const PatientHistoryPage = ({ token }) => {
     const [history, setHistory] = useState([]);
@@ -16,9 +19,7 @@ const PatientHistoryPage = ({ token }) => {
     const [selectedIds, setSelectedIds] = useState(new Set()); // Estado para almacenar IDs seleccionados
 
     const { idPaciente } = useParams();
-    const navigate = useNavigate();
-    const role = localStorage.getItem('role');
-    // Filtros
+    const navigate = useNavigate();    // Filtros
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
     const [searchId, setSearchId] = useState("");
@@ -27,19 +28,14 @@ const PatientHistoryPage = ({ token }) => {
     useEffect(() => {
         const loadPatientData = async () => {
             try {
-                // Llamadas paralelas
                 const [patientDataResponse, historyResponse, vitalSignsResponse] = await Promise.allSettled([
                     fetchPatientInfo(idPaciente),
                     fetchPatientHistory(idPaciente, token),
                     fetchPatientHistoryRecords(idPaciente),
                 ]);
-
-                // Manejar respuesta de información del paciente
                 if (patientDataResponse.status === "fulfilled") {
                     setPatientInfo(patientDataResponse.value || null);
                 }
-
-                // Manejar respuesta del historial del paciente
                 if (historyResponse.status === "fulfilled") {
                     setHistory(historyResponse.value?.data || []); // Vacío si no hay datos
                     setFilteredHistory(historyResponse.value?.data || []); // Inicializar el historial filtrado
@@ -49,8 +45,6 @@ const PatientHistoryPage = ({ token }) => {
                 } else {
                     throw new Error("Error al obtener el historial del paciente");
                 }
-
-                // Manejar respuesta del historial de signos vitales
                 if (vitalSignsResponse.status === "fulfilled") {
                     const vitalSignsData = vitalSignsResponse.value || [];
                     setPatientHistory(vitalSignsData);
@@ -145,13 +139,8 @@ const PatientHistoryPage = ({ token }) => {
     };
 
     const handleGoBack = () => {
-        navigate(-1); // Redirige a la página de búsqueda
+        navigate(`/patient/${idPaciente}/records`); // Redirige a la página de búsqueda
     };
-
-    const handleGoToPatientPage = () => {
-        navigate(`/patient/${idPaciente}`); // Redirige a la página de detalles del paciente
-    };
-
     const isModified = (currentValue, nextValue) => {
         if (nextValue === undefined || nextValue === null) {
             return false;
@@ -168,10 +157,38 @@ const PatientHistoryPage = ({ token }) => {
         return ""; // No marcar como cambiado si no son del mismo ID
     };
 
-    const exportPDF = () => {
-        const selectedRecords = filteredPatientHistory.filter(record => selectedIds.has(record.id_registro));
-        generatePatientPDF(patientInfo, selectedRecords, filteredHistory, filteredPatientHistory, selectedIds); // Generar PDF solo con los seleccionados
+    const exportPDF = async () => {
+        try {
+            // Verificar si hay registros de signos vitales seleccionados
+            const selectedRecords = filteredPatientHistory.filter(record => selectedIds.has(record.id_registro));
+            
+            // Si no hay registros seleccionados
+            if (selectedRecords.length === 0) {
+                const result = await Swal.fire({
+                    title: "¿Exportar sin signos vitales?",
+                    text: "Este PDF no contiene registros de signos vitales. ¿Estás seguro de que deseas continuar?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#d33",
+                    cancelButtonColor: "#3085d6",
+                    confirmButtonText: "Sí, exportar",
+                    cancelButtonText: "Cancelar",
+                });
+    
+                // Si el usuario cancela, no hacer nada
+                if (!result.isConfirmed) {
+                    return;
+                }
+            }
+    
+            // Generar el PDF si hay registros seleccionados o el usuario confirmó la exportación
+            generatePatientPDF(patientInfo, selectedRecords, filteredHistory, filteredPatientHistory, selectedIds);
+            toast.success("PDF generado correctamente");
+        } catch (err) {
+            toast.error("No se pudo generar el PDF");
+        }
     };
+    
     const isPediatric = patientInfo && patientInfo.age_group !== "Adulto";
 
     if (loading) return <div>Loading...</div>;
@@ -180,10 +197,8 @@ const PatientHistoryPage = ({ token }) => {
     return (
         <div className="flex flex-col items-center min-h-screen bg-gray-100 p-12 overflow-auto">
             <h1 className="text-3xl font-bold mb-8">Trazabilidad del paciente </h1>
-            {/* Contenedor para capturar en PDF */}
             <div id="pdf-content">
 
-                {/* Botones para filtros */}
                 <div className="flex items-center space-x-4 mb-4">
                     <input
                         type="date"
@@ -242,15 +257,13 @@ const PatientHistoryPage = ({ token }) => {
                             <tbody>
 
                                 {filteredHistory.map((record, index) => {
-                                    const { date, time } = formatDateTime(record.created_at);
+                                    const { date, time } = formatDateTime(record.created_at); 
                                     const nextRecord = history[index + 1] || {};
                                     return (
                                         <tr key={index} className={`text-center ${index % 2 === 0 ? "bg-gray-50" : "bg-white"}`}>
-                                            <td className="p-3 border">{date}</td>
-                                            <td className="p-3 border">{time}</td>
-
+                                            <td className={`p-3 border ${isModified(formatDate(record.created_at.split('T')[0]), formatDate(nextRecord.created_at?.split('T')[0])) ? "bg-green-300" : ""}`}>{date}</td>
+                                            <td className={`p-3 border ${isModified(record.created_at.split('T')[1], nextRecord.created_at?.split('T')[1]) ? "bg-green-300" : ""}`}>{time}</td>
                                             <td className={`p-3 border ${isModified(record.primer_nombre, nextRecord.primer_nombre) ? "bg-green-300" : ""}`}>{record.primer_nombre}</td>
-
                                             <td className={`p-3 border ${isModified(record.segundo_nombre, nextRecord.segundo_nombre) ? "bg-green-300" : ""}`}>{record.segundo_nombre}</td>
                                             <td className={`p-3 border ${isModified(record.primer_apellido, nextRecord.primer_apellido) ? "bg-green-300" : ""}`}>{record.primer_apellido}</td>
                                             <td className={`p-3 border ${isModified(record.segundo_apellido, nextRecord.segundo_apellido) ? "bg-green-300" : ""}`}>{record.segundo_apellido}</td>
@@ -315,6 +328,7 @@ const PatientHistoryPage = ({ token }) => {
 
                                 {filteredPatientHistory.map((currentRecord, index) => {
                                     const prevRecord = index > 0 ? filteredPatientHistory[index - 1] : null;
+                                    
                                     return (
 
                                         <tr key={currentRecord.id_registro} className="text-center">
@@ -325,13 +339,9 @@ const PatientHistoryPage = ({ token }) => {
                                                     onChange={() => handleSelectRecord(currentRecord.id_registro)}
                                                 />
                                             </td>
-                                            <td className="p-3 border">{currentRecord.id_registro}</td><td className={`p-3 border ${getChangedClass("record_date", currentRecord, prevRecord)}`}>
-                                                {formatDate(currentRecord.record_date)}
-                                            </td>
-                                            <td className={`p-3 border ${getChangedClass("record_time", currentRecord, prevRecord)}`}>
-                                                {currentRecord.record_time}
-                                            </td>
-
+                                            <td className="p-3 border">{currentRecord.id_registro}</td>
+                                            <td className={`p-3 border ${getChangedClass("record_date", currentRecord, prevRecord)}`}>{formatDate(currentRecord.record_date)}</td>
+                                            <td className={`p-3 border ${getChangedClass("record_time", currentRecord, prevRecord)}`}>{currentRecord.record_time}</td>
                                             <td className={`p-3 border ${getChangedClass("pulso", currentRecord, prevRecord)}`}>{currentRecord.pulso}</td>
                                             <td className={`p-3 border ${getChangedClass('temperatura', currentRecord, prevRecord)}`}>{currentRecord.temperatura}</td>
                                             <td className={`p-3 border ${getChangedClass('frecuencia_respiratoria', currentRecord, prevRecord)}`}>{currentRecord.frecuencia_respiratoria}</td>
@@ -361,23 +371,18 @@ const PatientHistoryPage = ({ token }) => {
 
                 {/* Botones de acción */}
                 <div className="flex justify-center w-full max-w-7xl mt-6 space-x-4">
-                    {/* Botón de regresar */}
                     <button
                         onClick={handleGoBack}
                         className="flex items-center px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition"
                     >
                         <FiHome className="mr-2" /> Regresar
                     </button>
-
-                    {/* Botón de quitar selecciones */}
                     <button
                         onClick={() => setSelectedIds(new Set())} // Limpia todas las selecciones
                         className="flex items-center px-6 py-3 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition"
                     >
                         <FiX className="mr-2" /> Quitar Selecciones
                     </button>
-
-                    {/* Botón de seleccionar todo */}
                     <button
                         onClick={() => {
                             const allIds = new Set(filteredPatientHistory.map(record => record.id_registro));
@@ -387,8 +392,6 @@ const PatientHistoryPage = ({ token }) => {
                     >
                         <FiPlusCircle className="mr-2" /> Seleccionar Todo
                     </button>
-
-                    {/* Botón de exportar PDF */}
                     <button
                         onClick={exportPDF}
                         className="flex items-center px-6 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition"

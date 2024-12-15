@@ -189,7 +189,7 @@ const generatePDFTrazabilidad = async (usuarioInfo, trazabilidadData) => {
             doc.setFont("helvetica", "bold");
             doc.setFontSize(12);
             doc.setTextColor(255, 255, 255); // Texto blanco
-            doc.text(`Usuario: ${usuario}`, MARGIN_X, startY + 10);
+            doc.text(`Responsable de la acción: ${usuario}`, MARGIN_X, startY + 10);
             doc.text(`Rango de fechas: ${rangoFechas}`, MARGIN_X, startY + 16);
 
             startY += 30; // Espaciado después del encabezado
