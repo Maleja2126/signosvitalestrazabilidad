@@ -250,6 +250,26 @@ const DetalleTrazabilidadModal = ({ isOpen, onClose, trazabilidadId }) => {
               <span className="ml-2">{actionSettings[trazabilidad.accion]?.emoji}</span>
             </p>
 
+            {/* Información del paciente */}
+            {["Nuevo registro de Signos Vitales", "Actualización de Signos Vitales"].includes(trazabilidad.accion) ? (
+              trazabilidad.datos_nuevos?.paciente ? (
+                <div className="p-4 rounded-lg shadow bg-blue-100 mt-4">
+                  <h4 className="text-lg font-bold flex items-center mb-3">
+                    <span className="mr-2">📋</span> Información del Paciente
+                  </h4>
+                  <ul className="list-disc pl-5">
+                    {Object.entries(trazabilidad.datos_nuevos.paciente).map(([key, value]) => (
+                      <li key={key} className="leading-6">
+                        <strong>{friendlyFieldNames[key] || key}:</strong> {value || "No disponible"}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                <p className="text-gray-500 mt-4">No se encontró información del paciente asociada.</p>
+              )
+            ) : null}
+
             {/* Información del Paciente (Solo para Descarga de PDF) */}
             {trazabilidad.accion === "Descarga de PDF" ? (
               <>
