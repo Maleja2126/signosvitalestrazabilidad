@@ -395,17 +395,16 @@ exports.logDownloadAction = async (req, res) => {
         const paciente = patient[0];
 
         // Función para formatear fecha manualmente a DD/MM/YYYY
-        const formatFechaNacimiento = (fecha) => {
+        const formatFechaSinHora = (fecha) => {
             if (!fecha) return "No disponible";
-
+        
             const date = new Date(fecha);
-
             if (isNaN(date.getTime())) return "No disponible";
-
+        
             const day = String(date.getDate()).padStart(2, "0");
             const month = String(date.getMonth() + 1).padStart(2, "0");
             const year = date.getFullYear();
-
+        
             return `${day}/${month}/${year}`;
         };
 
@@ -419,8 +418,8 @@ exports.logDownloadAction = async (req, res) => {
             tipo_identificacion: paciente.tipo_identificacion,
             ubicacion: paciente.ubicacion,
             status: paciente.status,
-            created_at: new Date(paciente.created_at).toLocaleString("es-ES"),
-            fecha_nacimiento: formatFechaNacimiento(paciente.fecha_nacimiento),
+            created_at: formatFechaSinHora(paciente.created_at), // Aquí enviamos solo la fecha
+            fecha_nacimiento: formatFechaSinHora(paciente.fecha_nacimiento), // Sin hora
             age_group: paciente.age_group,
             responsable_username: paciente.responsable_username,
         };
