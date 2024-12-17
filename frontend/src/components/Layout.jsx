@@ -1,8 +1,5 @@
 import Navbar from './navbar';
 import Sidebar from './Sidebar';
-import './navbar.css';  // Para el archivo CSS de navbar
-import './Sidebar.css';  // Para el archivo CSS de Sidebar
-
 
 const Layout = ({ children }) => {
   return (
