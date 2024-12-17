@@ -263,7 +263,7 @@ const generatePDFTrazabilidad = async (usuarioInfo, trazabilidadData) => {
                 // Verificar si se necesita un salto de página
                 if (!firstPage) {
                     doc.addPage();
-                    startY = 20; // Reinicia posición Y al inicio de la nueva página
+                    startY = 20; // Reinicia posición Y al inicio de la nueva páginaaa
                 } else {
                     firstPage = false; // Marca que la primera página ya tiene título
                 }
