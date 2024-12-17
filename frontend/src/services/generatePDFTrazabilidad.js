@@ -79,7 +79,7 @@ const mapFieldName = (key) => {
 // Procesar datos
 const renderStyledTable = (doc, startY, data, title, marginX, actionType) => {
     if (!data || Object.keys(data).length === 0) {
-        doc.setFont("helvetica", "italic");
+        doc.setFont("Times", "normal");
         doc.text("No hay datos disponibles.", marginX, startY);
         return startY + 10;
     }
@@ -221,7 +221,7 @@ const generatePDFTrazabilidad = async (usuarioInfo, trazabilidadData) => {
         };
 
         const drawReportHeader = () => {
-            doc.setFont("helvetica", "helvetica");
+            doc.setFont("Times", "Normal");
             doc.setFontSize(28);
             doc.setTextColor(41, 76, 119);
             doc.text("Reporte de Trazabilidad", pageWidth / 2, startY, { align: "center" });
@@ -232,7 +232,7 @@ const generatePDFTrazabilidad = async (usuarioInfo, trazabilidadData) => {
             drawReportHeader();
             doc.setFillColor(41, 128, 185);
             doc.rect(0, startY, pageWidth, 20, "F");
-            doc.setFont("helvetica", "helvetica");
+            doc.setFont("Times", "Normal");
             doc.setFontSize(15);
             doc.setTextColor(255, 255, 255);
             doc.text(`Acciones realizadas por: ${usuario}`, MARGIN_X, startY + 10);
@@ -270,13 +270,13 @@ const generatePDFTrazabilidad = async (usuarioInfo, trazabilidadData) => {
                 }
 
                 // Dibuja acción principal
-                doc.setFont("helvetica", "bold");
-                doc.setFontSize(12);
+                doc.setFont("Times", "bold");
+                doc.setFontSize(14);
                 doc.setTextColor(41, 76, 119);
                 doc.text(`Acción: ${accion.accion || "Sin acción"}`, MARGIN_X, startY);
                 startY += 8;
 
-                doc.setFont("helvetica", "helvetica");
+                doc.setFont("Times", "Normal");
                 doc.setFontSize(12);
                 doc.setTextColor(0, 0, 0);
                 doc.text(`Fecha y Hora: ${formatDate(accion.fecha_hora)}`, MARGIN_X, startY);
@@ -313,7 +313,7 @@ const generatePDFTrazabilidad = async (usuarioInfo, trazabilidadData) => {
         const drawStyledSectionHeader = (title) => {
             doc.setFillColor(41, 128, 185); // Fondo azul fuerte
             doc.roundedRect(MARGIN_X - 10, startY, pageWidth - 2 * MARGIN_X + 20, 14, 4, 4, "F");
-            doc.setFont("helvetica", "bold");
+            doc.setFont("Times", "Normal");
             doc.setFontSize(18);
             doc.setTextColor(255, 255, 255); // Texto blanco
             doc.text(title, pageWidth / 2, startY + 9, { align: "center" });
@@ -326,12 +326,12 @@ const generatePDFTrazabilidad = async (usuarioInfo, trazabilidadData) => {
             doc.setDrawColor(200, 200, 200); 
             doc.roundedRect(MARGIN_X, startY, pageWidth - 2 * MARGIN_X, cardHeight, 4, 4, "FD");
 
-            doc.setFont("helvetica", "bold");
+            doc.setFont("Times", "Normal");
             doc.setFontSize(14); 
             doc.setTextColor(41, 76, 119);
             doc.text(label, MARGIN_X + 8, startY + 10);
 
-            doc.setFont("helvetica", "normal");
+            doc.setFont("Times", "Normal");
             doc.setTextColor(0, 0, 0);
             doc.text(value, pageWidth - MARGIN_X - 8, startY + 10, { align: "right" });
             startY += cardHeight + 8;
@@ -344,7 +344,7 @@ const generatePDFTrazabilidad = async (usuarioInfo, trazabilidadData) => {
             doc.setFillColor(200, 230, 255); 
             doc.rect(MARGIN_X, startY + 4, dateWidth + 10, 15, "F");
 
-            doc.setFont("helvetica", "bold");
+            doc.setFont("Times", "Normal");
             doc.setFontSize(14);
             doc.setTextColor(0, 0, 0);
             doc.text(dateText, MARGIN_X + 5, startY + 14); 
