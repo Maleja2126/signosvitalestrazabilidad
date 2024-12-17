@@ -48,31 +48,31 @@ const actionSettings = {
     showPrevious: false,
   },
   "Actualización de datos del paciente": {
-    color: "bg-yellow-100",
+    color: "bg-yellow-200",
     emoji: "⚠️",
     description: "Se actualizaron los datos del paciente",
     showPrevious: true,
   },
   "Descarga de PDF": {
-    color: "bg-red-100",
+    color: "bg-red-300",
     emoji: "📥",
     description: "Se ha descargado el historial del paciente",
     showPrevious: false,
   },
   "Cambio de estado del paciente": {
-    color: "bg-blue-100",
+    color: "bg-blue-200",
     emoji: "🔄",
     description: "Se cambió el estado del paciente",
     showPrevious: true,
   },
   "Nuevo registro de Signos Vitales": {
-    color: "bg-pink-100",
+    color: "bg-pink-200",
     emoji: "📉",
     description: "Se ha creado un nuevo registro de signos vitales",
     showPrevious: false,
   },
   "Actualización de Signos Vitales": {
-    color: "bg-purple-100",
+    color: "bg-purple-200",
     emoji: "📝",
     description: "Se ha actualizado un registro de signos vitales",
     showPrevious: true,
@@ -276,13 +276,13 @@ const DetalleTrazabilidadModal = ({ isOpen, onClose, trazabilidadId }) => {
                 <DatosCard
                   datos={trazabilidad.datos_nuevos}
                   titulo="Información del Paciente"
-                  colorClass="bg-red-100"
+                  colorClass="bg-red-300"
                   emoji="📋"
                   soloMostrarNuevo={true}
                 />
 
                 {/* Responsable de la Descarga */}
-                <div className="p-4 rounded-lg shadow bg-blue-100 mt-4">
+                <div className="p-4 rounded-lg shadow bg-blue-200 mt-4">
                   <h4 className="text-lg font-bold flex items-center mb-3">
                     <span className="mr-2">👤</span> Responsable de la Descarga
                   </h4>
