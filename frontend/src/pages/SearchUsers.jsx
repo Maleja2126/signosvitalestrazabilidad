@@ -90,7 +90,7 @@ const SearchUsers = () => {
     };
 
     return (
-        <div className="flex flex-col items-center justify-start min-h-screen bg-white-50 p-3">
+        <div className="flex flex-col items-center justify-start min-h-screen bg-white-50 p-6">
             <ToastContainer />
             <h1 className="text-4xl font-bold mb-3 mt-10 text-blue-800">Usuarios Registrados</h1>
             {error && <p className="text-red-500">{error}</p>}
