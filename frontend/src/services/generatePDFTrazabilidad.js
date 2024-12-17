@@ -8,7 +8,7 @@ const friendlyFieldNames = {
     segundo_nombre: "Segundo nombre",
     primer_apellido: "Primer apellido",
     segundo_apellido: "Segundo apellido",
-    Nombre: "Nombre",
+    Nombre: "Nombre completo",
     tipo_identificacion: "Tipo de identificación",
     numero_identificacion: "Número de identificación",
     fecha_nacimiento: "Fecha de nacimiento",
@@ -76,104 +76,79 @@ const mapFieldName = (key) => {
     return friendlyName ? capitalizeFirstLetter(friendlyName) : capitalizeFirstLetter(key.replace(/_/g, " "));
 };
 
-const calculateStartY = (doc, startY, requiredHeight) => {
-    const pageHeight = doc.internal.pageSize.height;
-    if (startY + requiredHeight > pageHeight) {
-        doc.addPage();
-        return 20; // Reset al margen superior
-    }
-    return startY;
-};
-
 // Procesar datos
-const processDataForPDF = (data) => {
-    return Object.entries(data)
-        .filter(([key]) => !shouldExclude(key, data))
-        .map(([key, value]) => {
-            if (key === "fecha_nacimiento" && value) {
-                return [mapFieldName(key), formatDateOnly(value)];
-            }
-            if (key === "created_at" && typeof value === "object") {
-                return [mapFieldName(key), formatDateOnly(value.nuevo)];
-            }
-            if (typeof value === "object" && value !== null && value.nuevo) {
-                return [mapFieldName(key), value.nuevo || "Sin información"];
-            }
-            if (key.includes("fecha") || (typeof value === "string" && value.includes("T"))) {
-                return [mapFieldName(key), formatDateOnly(value)];
-            }
-            return [mapFieldName(key), value || "Sin información"];
-        });
-};
-
-// Renderizar tablas estilizadas
-const renderStyledTable = (doc, startY, data, title, header, marginX, actionType) => {
+const renderStyledTable = (doc, startY, data, title, marginX, actionType) => {
     if (!data || Object.keys(data).length === 0) {
         doc.setFont("helvetica", "italic");
         doc.text("No hay datos disponibles.", marginX, startY);
         return startY + 10;
     }
 
-    const tableData = [];
+    const tableData = []; // Almacena los datos de la tabla
 
-    // Mostrar Información del Paciente solo para acciones específicas
-    if (
-        ["Nuevo registro de Signos Vitales", "Actualización de Signos Vitales"].includes(actionType) &&
-        data.paciente
-    ) {
-        tableData.push([
-            { content: "Información del Paciente", colSpan: 2, styles: { halign: "center", fontStyle: "bold", fillColor: [200, 230, 255] } }
-        ]);
-        Object.entries(data.paciente).forEach(([key, value]) => {
-            tableData.push([mapFieldName(key), value || "No disponible"]);
-        });
+    // Procesar datos y mostrar solo valores nuevos
+    Object.entries(data)
+        .filter(([key]) => !shouldExclude(key, data) && key !== "paciente")
+        .forEach(([key, value]) => {
+            let displayValue = value || "Sin información";
 
-        // Agregar un separador visual
-        tableData.push([{ content: "", colSpan: 2, styles: { fillColor: [255, 255, 255] } }]);
-    }
-
-    // Datos Nuevos (excluye "paciente")
-    const filteredData = Object.entries(data).filter(([key]) => key !== "paciente" && !shouldExclude(key, data));
-    if (filteredData.length > 0) {
-        tableData.push([
-            { content: title, colSpan: 2, styles: { halign: "center", fontStyle: "bold", fillColor: [41, 128, 185], textColor: 255 } }
-        ]);
-
-        filteredData.forEach(([key, value]) => {
-            if (key === "created_at" && typeof value === "object") {
-                tableData.push([mapFieldName(key), formatDateOnly(value.nuevo)]);
-            } else if (typeof value === "object" && value !== null && value.nuevo) {
-                tableData.push([mapFieldName(key), value.nuevo || "Sin información"]);
+            // Si el valor es un objeto y no tiene 'nuevo', desglosar directamente
+            if (typeof value === "object" && value !== null) {
+                if (value.nuevo) {
+                    displayValue = value.nuevo || "Sin información";
+                } else {
+                    displayValue = Object.entries(value)
+                        .map(([subKey, subValue]) => `${mapFieldName(subKey)}: ${subValue || "Sin información"}`)
+                        .join("\n");
+                }
             } else if (key.includes("fecha") || (typeof value === "string" && value.includes("T"))) {
-                tableData.push([mapFieldName(key), formatDateOnly(value)]);
-            } else {
-                tableData.push([mapFieldName(key), value || "Sin información"]);
+                displayValue = formatDateOnly(value); // Formatear fechas
             }
-        });
-    }
 
-    // Renderizar la tabla final
+            tableData.push([mapFieldName(key), displayValue]);
+        });
+
+    // Renderizar la tabla
+    return renderTable(doc, startY, tableData, title);
+};
+
+const renderPatientInfoTable = (doc, startY, patientData, marginX) => {
+    const tableData = Object.entries(patientData).map(([key, value]) => [
+        mapFieldName(key), value || "Sin información"
+    ]);
+
+    const head = [
+        [{ content: "Información del Paciente", colSpan: 2, styles: { halign: "center", fillColor: [41, 128, 185], textColor: 255 } }]
+    ];
+
     autoTable(doc, {
         startY,
+        head: head,
         body: tableData,
-        theme: "grid",
-        tableWidth: "auto", // Hace que la tabla se ajuste uniformemente
+        theme: "grid", // Cambiado a "grid" para igualar estilo
+        tableWidth: "auto",
+        columnStyles: {
+            0: { cellWidth: 100, halign: "center", overflow: "hidden" }, // Primera columna centrada y negrita
+            1: { cellWidth: 80, halign: "center", overflow: "hidden" }, // Segunda columna centrada
+        },
         styles: {
-            fontSize: 10, // Tamaño de fuente
-            cellPadding: 3, // Espacio interno entre texto y bordes
-            halign: "center", // Centrar el contenido horizontalmente
-            valign: "middle", // Centrar el contenido verticalmente
+            fontSize: 10,
+            cellPadding: 3,
+            halign: "center", // Centra el texto horizontalmente
+            valign: "middle", // Centra el texto verticalmente
         },
-        headStyles: { 
-            fillColor: [41, 128, 185], // Fondo azul
+        headStyles: {
+            fillColor: [41, 128, 185], // Fondo azul igual
             textColor: 255, // Texto blanco
-            halign: "center", // Centrar encabezado
+            halign: "center",
+            valign: "middle",
+            overflow: "linebreak",
         },
-        alternateRowStyles: { fillColor: [245, 245, 245] }, // Filas alternas
-        margin: { left: 20, right: 20 }, // Márgenes consistentes
+        alternateRowStyles: { fillColor: [242, 242, 242] }, // Color gris claro para filas alternas
+        margin: { left: 15, right: 15 }, // Márgenes ajustados igual
     });
 
-    return doc.lastAutoTable.finalY + 10;
+    return doc.lastAutoTable.finalY + 10; // Devuelve la posición Y actualizada
 };
 
 // Función para renderizar la tabla de información
@@ -191,29 +166,46 @@ const renderTablaConCondicion = (doc, startY, datos, tipoAccion, responsableDesc
             { content: "Responsable de la descarga", styles: { fontStyle: "bold", fillColor: [230, 247, 255] } },
             { content: responsableDescarga, styles: { fillColor: [230, 247, 255] } }
         ]);
-    }
 
-    // Renderizar la tabla con un encabezado manual y sin repetir en nuevas páginas
+    }    
+    
+    return renderTable(doc, startY, cuerpoTabla, titulo, true);
+};
+
+const renderTable = (doc, startY, body, title = null, showHeadOnce = false) => {
+    const head = title
+        ? [[{ content: title, colSpan: 2, styles: { halign: "center", fillColor: [41, 128, 185], textColor: 255 } }]]
+        : null;
+
     autoTable(doc, {
         startY,
-        head: [[
-            { content: titulo, colSpan: 2, styles: { halign: "center", fillColor: [41, 128, 185], textColor: 255 } }
-        ]],
-        body: cuerpoTabla,
+        head: head,
+        body: body,
         theme: "grid",
-        tableWidth: "auto", // Ancho consistente entre tablas
-        styles: {
-            fontSize: 10, 
-            cellPadding: 3, 
-            halign: "center",
-            valign: "middle", 
+        tableWidth: "auto",
+        columnStyles: {
+            0: { cellWidth: 100, halign: "center" , overflow: "hidden"}, // Primera columna centrada
+            1: { cellWidth: 80, halign: "center", overflow: "hidden"}, // Segunda columna centrada
         },
-        alternateRowStyles: { fillColor: [245, 245, 245] },
-        margin: { left: 20, right: 20 }, // Márgenes iguales
-        showHead: "firstPage", // No repite encabezado en nuevas páginas
+        styles: {
+            fontSize: 10,
+            cellPadding: 3,
+            halign: "center", // Centra el texto horizontalmente
+            valign: "middle", // Centra el texto verticalmente
+        },
+        headStyles: {
+            fillColor: [41, 128, 185],
+            textColor: 255,
+            halign: "center",
+            valign: "middle",
+            overflow: "linebreak", // Forzar salto si no cabe
+        },
+        alternateRowStyles: { fillColor: [242, 242, 242] },
+        margin: { left: 15, right: 15 },
+        showHead: showHeadOnce ? "firstPage" : "everyPage",
     });
 
-    return doc.lastAutoTable.finalY + 10; // Nueva posición Y después de la tabla
+    return doc.lastAutoTable.finalY + 10; // Espacio entre tablas
 };
 
 const generatePDFTrazabilidad = async (usuarioInfo, trazabilidadData) => {
@@ -232,30 +224,25 @@ const generatePDFTrazabilidad = async (usuarioInfo, trazabilidadData) => {
             return `${fechaInicio.toLocaleDateString()} - ${fechaFin.toLocaleDateString()}`;
         };
 
-        // Encabezado principal del reporte
         const drawReportHeader = () => {
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(20);
+            doc.setFont("helvetica", "helvetica");
+            doc.setFontSize(28);
             doc.setTextColor(41, 76, 119);
             doc.text("Reporte de Trazabilidad", pageWidth / 2, startY, { align: "center" });
-            startY += 10; // Reduje el espacio vertical
+            startY += 10;
         };
 
         const drawUserHeader = (usuario, rangoFechas) => {
-            doc.setFillColor(41, 128, 185); // Color de la tabla
+            drawReportHeader(); // Título aparece solo con el usuario
+            doc.setFillColor(41, 128, 185);
             doc.rect(0, startY, pageWidth, 20, "F");
-
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(14);
+            doc.setFont("helvetica", "helvetica");
+            doc.setFontSize(15);
             doc.setTextColor(255, 255, 255);
-            doc.text(`Responsable de la acción: ${usuario}`, MARGIN_X, startY + 10);
+            doc.text(`Acciones realizadas por: ${usuario}`, MARGIN_X, startY + 10);
             doc.text(`Rango de fechas: ${rangoFechas}`, MARGIN_X, startY + 16);
-
-            startY += 28; // Reduje el espacio adicional
+            startY += 28;
         };
-
-        // Iniciar PDF
-        drawReportHeader();
 
         // Agrupar los datos por usuario
         const groupedData = trazabilidadData.reduce((acc, item) => {
@@ -267,102 +254,108 @@ const generatePDFTrazabilidad = async (usuarioInfo, trazabilidadData) => {
 
         let firstPage = true;
 
-// Recorrer los datos agrupados por usuario
-for (const [usuario, acciones] of Object.entries(groupedData)) {
-    const rangoFechas = calcularRangoFechas(acciones);
-    let headerPrinted = false; // Bandera para controlar el encabezado
+        // Recorrer los datos agrupados por usuario
+        for (const [usuario, acciones] of Object.entries(groupedData)) {
+            const rangoFechas = calcularRangoFechas(acciones);
+            let firstActionOfUser = true;
 
-    // Salto de página al inicio de cada nuevo usuario
-    if (!firstPage) {
-        doc.addPage();
-        startY = 20;
-        drawReportHeader();
-    }
-    firstPage = false;
+            acciones.forEach((accion, index) => {
+                // Verificar si se necesita un salto de página
+                if (!firstPage) {
+                    doc.addPage();
+                    startY = 20; // Reinicia posición Y al inicio de la nueva página
+                } else {
+                    firstPage = false; // Marca que la primera página ya tiene título
+                }
 
-    // Encabezado de usuario (solo una vez por usuario)
-    drawUserHeader(usuario, rangoFechas);
+                // Dibujar encabezado del usuario solo al inicio de sus acciones
+                if (firstActionOfUser) {
+                    drawUserHeader(usuario, rangoFechas); // Incluye el título solo aquí
+                    firstActionOfUser = false; // Asegura que se dibuja una sola vez por usuario
+                }
 
-    acciones.forEach((accion) => {
-        // Validar si se necesita salto de página
-        if (startY + 30 > pageHeight - 20) {
-            doc.addPage();
-            startY = 20;
-            drawReportHeader();
-            drawUserHeader(usuario, rangoFechas); // Redibujar solo si es una nueva página
+                // Dibuja acción principal
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(12);
+                doc.setTextColor(41, 76, 119);
+                doc.text(`Acción: ${accion.accion || "Sin acción"}`, MARGIN_X, startY);
+                startY += 8;
+
+                doc.setFont("helvetica", "helvetica");
+                doc.setFontSize(12);
+                doc.setTextColor(0, 0, 0);
+                doc.text(`Fecha y Hora: ${formatDate(accion.fecha_hora)}`, MARGIN_X, startY);
+                startY += 6;
+
+                if (accion.responsable) {
+                    doc.text(`Responsable: ${accion.responsable}`, MARGIN_X, startY);
+                    startY += 6;
+                }
+
+                startY += 5; // Espacio adicional entre acciones
+
+                const datosNuevos = typeof accion.datos_nuevos === "string" ? JSON.parse(accion.datos_nuevos || "{}") : accion.datos_nuevos;
+                if (datosNuevos.paciente) {
+                    startY = renderPatientInfoTable(doc, startY, datosNuevos.paciente, MARGIN_X);
+                }                
+                if (accion.accion === "Descarga de PDF") {
+                    const responsableDescarga = accion.usuario_nombre || "No especificado";
+                    startY = renderTablaConCondicion(doc, startY, datosNuevos.paciente || datosNuevos, accion.accion, responsableDescarga);    
+                } else if (datosNuevos && Object.keys(datosNuevos).length > 0) {
+                    startY = renderStyledTable(doc, startY, datosNuevos, "Datos Nuevos", "Valores Nuevos", MARGIN_X);
+                }
+
+                // Datos Anteriores
+                const datosAntiguos = typeof accion.datos_antiguos === "string" ? JSON.parse(accion.datos_antiguos || "{}") : accion.datos_antiguos;
+
+                if (datosAntiguos && Object.keys(datosAntiguos).length > 0) {
+                    startY = renderStyledTable(doc, startY, datosAntiguos, "Datos Anteriores", "Valores Anteriores", MARGIN_X);
+                }
+            });
         }
-
-        // Acción principal
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(14);
-        doc.setTextColor(41, 76, 119);
-        doc.text(`Acción: ${accion.accion || "Sin acción"}`, MARGIN_X, startY);
-        startY += 8;
-
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(12);
-        doc.setTextColor(0, 0, 0);
-        doc.text(`Fecha y Hora: ${formatDate(accion.fecha_hora)}`, MARGIN_X, startY);
-        startY += 6;
-
-        if (accion.responsable) {
-            doc.text(`Responsable: ${accion.responsable}`, MARGIN_X, startY);
-            startY += 6;
-        }
-
-        startY += 10;
-
-        // Datos Nuevos
-        // Datos Nuevos
-        const datosNuevos = typeof accion.datos_nuevos === "string" ? JSON.parse(accion.datos_nuevos || "{}") : accion.datos_nuevos;
-
-        if (accion.accion === "Descarga de PDF") {
-            const responsableDescarga = accion.usuario_nombre || "No especificado";
-            startY = renderTablaConCondicion(doc, startY, datosNuevos.paciente || datosNuevos, accion.accion, responsableDescarga);
-        } else if (datosNuevos && Object.keys(datosNuevos).length > 0) {
-            startY = renderStyledTable(doc, startY, datosNuevos, "Datos Nuevos", "Valores Nuevos", MARGIN_X);
-        }
-
-        // Datos Anteriores
-        const datosAntiguos = typeof accion.datos_antiguos === "string" ? JSON.parse(accion.datos_antiguos || "{}") : accion.datos_antiguos;
-
-        if (datosAntiguos && Object.keys(datosAntiguos).length > 0) {
-            startY = renderStyledTable(doc, startY, datosAntiguos, "Datos Anteriores", "Valores Anteriores", MARGIN_X);
-        }
-    });
-}
 
         // Información General al final
         const drawStyledSectionHeader = (title) => {
             doc.setFillColor(41, 128, 185); // Fondo azul fuerte
-            doc.rect(MARGIN_X - 10, startY, pageWidth - 2 * MARGIN_X + 20, 12, "F");
+            doc.roundedRect(MARGIN_X - 10, startY, pageWidth - 2 * MARGIN_X + 20, 14, 4, 4, "F");
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(16);
+            doc.setFontSize(18);
             doc.setTextColor(255, 255, 255); // Texto blanco
-            doc.text(title, pageWidth / 2, startY + 8, { align: "center" });
-            startY += 20;
+            doc.text(title, pageWidth / 2, startY + 9, { align: "center" });
+            startY += 24;
         };
 
         const drawInfoCard = (label, value) => {
-            const cardHeight = 12;
-            doc.setFillColor(240, 248, 255); // Azul muy claro
-            doc.roundedRect(MARGIN_X, startY, pageWidth - 2 * MARGIN_X, cardHeight, 3, 3, "F");
+            const cardHeight = 16; // Más altura
+            doc.setFillColor(240, 248, 255); // Fondo celeste claro
+            doc.setDrawColor(200, 200, 200); // Borde gris claro
+            doc.roundedRect(MARGIN_X, startY, pageWidth - 2 * MARGIN_X, cardHeight, 4, 4, "FD");
 
+            // Estilo del texto
             doc.setFont("helvetica", "bold");
+            doc.setFontSize(14); // Tamaño más grande
             doc.setTextColor(41, 76, 119);
-            doc.text(label, MARGIN_X + 5, startY + 8);
+            doc.text(label, MARGIN_X + 8, startY + 10);
 
             doc.setFont("helvetica", "normal");
             doc.setTextColor(0, 0, 0);
-            doc.text(value, pageWidth - MARGIN_X - 5, startY + 8, { align: "right" });
-            startY += cardHeight + 5;
+            doc.text(value, pageWidth - MARGIN_X - 8, startY + 10, { align: "right" });
+            startY += cardHeight + 8;
         };
 
-        const drawGradientLine = () => {
-            doc.setLineWidth(2);
-            doc.setDrawColor(41, 128, 185);
-            doc.line(MARGIN_X, startY, pageWidth - MARGIN_X, startY);
-            startY += 8;
+        const drawHighlightedDate = () => {
+            // Resaltado celeste como subrayado
+            const dateText = `Reporte generado el: ${new Date().toLocaleDateString()}`;
+            const dateWidth = doc.getTextWidth(dateText);
+
+            doc.setFillColor(200, 230, 255); // Fondo celeste resaltado
+            doc.rect(MARGIN_X, startY + 4, dateWidth + 10, 15, "F"); // Rectángulo de fondo
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(14);
+            doc.setTextColor(0, 0, 0); // Texto negro
+            doc.text(dateText, MARGIN_X + 5, startY + 14); // Centrado vertical dentro del resaltado
+            startY += 20;
         };
 
         // Renderizado de Información General
@@ -375,15 +368,12 @@ for (const [usuario, acciones] of Object.entries(groupedData)) {
             drawInfoCard(`Usuario: ${usuario}`, `Acciones: ${acciones.length}`);
         });
 
-        drawGradientLine();
-        doc.setFont("helvetica", "italic");
-        doc.setTextColor(100, 100, 100);
-        doc.text(`Reporte generado el: ${new Date().toLocaleDateString()}`, MARGIN_X, startY + 5);
-
+        drawHighlightedDate(); // Fecha resaltada
 
         const formattedDate = new Date().toISOString().split("T")[0];
         doc.save(`Trazabilidad_Reporte_${formattedDate}.pdf`);
         toast.success("PDF generado exitosamente.");
+
     } catch (error) {
         console.error("Error al generar el PDF:", error);
         toast.error("Hubo un error al generar el PDF.");
