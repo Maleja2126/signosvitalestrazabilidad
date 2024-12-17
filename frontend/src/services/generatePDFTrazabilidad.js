@@ -92,7 +92,6 @@ const renderStyledTable = (doc, startY, data, title, marginX, actionType) => {
         .forEach(([key, value]) => {
             let displayValue = value || "Sin información";
 
-            // Si el valor es un objeto y no tiene 'nuevo', desglosar directamente
             if (typeof value === "object" && value !== null) {
                 if (value.nuevo) {
                     displayValue = value.nuevo || "Sin información";
@@ -102,7 +101,7 @@ const renderStyledTable = (doc, startY, data, title, marginX, actionType) => {
                         .join("\n");
                 }
             } else if (key.includes("fecha") || (typeof value === "string" && value.includes("T"))) {
-                displayValue = formatDateOnly(value); // Formatear fechas
+                displayValue = formatDateOnly(value); 
             }
 
             tableData.push([mapFieldName(key), displayValue]);
@@ -154,8 +153,6 @@ const renderPatientInfoTable = (doc, startY, patientData, marginX) => {
 // Función para renderizar la tabla de información
 const renderTablaConCondicion = (doc, startY, datos, tipoAccion, responsableDescarga) => {
     const titulo = tipoAccion === "Descarga de PDF" ? "Información del Paciente" : "Datos Nuevos";
-
-    // Crear el cuerpo de la tabla
     const cuerpoTabla = Object.entries(datos).map(([key, value]) => [
         mapFieldName(key), value || "Sin información"
     ]);
@@ -190,22 +187,22 @@ const renderTable = (doc, startY, body, title = null, showHeadOnce = false) => {
         styles: {
             fontSize: 10,
             cellPadding: 3,
-            halign: "center", // Centra el texto horizontalmente
-            valign: "middle", // Centra el texto verticalmente
+            halign: "center", 
+            valign: "middle", 
         },
         headStyles: {
             fillColor: [41, 128, 185],
             textColor: 255,
             halign: "center",
             valign: "middle",
-            overflow: "linebreak", // Forzar salto si no cabe
+            overflow: "linebreak",
         },
         alternateRowStyles: { fillColor: [242, 242, 242] },
         margin: { left: 15, right: 15 },
         showHead: showHeadOnce ? "firstPage" : "everyPage",
     });
 
-    return doc.lastAutoTable.finalY + 10; // Espacio entre tablas
+    return doc.lastAutoTable.finalY + 10;
 };
 
 const generatePDFTrazabilidad = async (usuarioInfo, trazabilidadData) => {
@@ -216,7 +213,6 @@ const generatePDFTrazabilidad = async (usuarioInfo, trazabilidadData) => {
         const pageHeight = doc.internal.pageSize.height;
         let startY = 20;
 
-        // Calcular rango de fechas de las acciones
         const calcularRangoFechas = (acciones) => {
             const fechas = acciones.map((accion) => new Date(accion.fecha_hora));
             const fechaInicio = new Date(Math.min(...fechas));
@@ -233,7 +229,7 @@ const generatePDFTrazabilidad = async (usuarioInfo, trazabilidadData) => {
         };
 
         const drawUserHeader = (usuario, rangoFechas) => {
-            drawReportHeader(); // Título aparece solo con el usuario
+            drawReportHeader();
             doc.setFillColor(41, 128, 185);
             doc.rect(0, startY, pageWidth, 20, "F");
             doc.setFont("helvetica", "helvetica");
@@ -260,18 +256,17 @@ const generatePDFTrazabilidad = async (usuarioInfo, trazabilidadData) => {
             let firstActionOfUser = true;
 
             acciones.forEach((accion, index) => {
-                // Verificar si se necesita un salto de página
                 if (!firstPage) {
                     doc.addPage();
-                    startY = 20; // Reinicia posición Y al inicio de la nueva páginaaa
+                    startY = 20;
                 } else {
-                    firstPage = false; // Marca que la primera página ya tiene título
+                    firstPage = false;
                 }
 
                 // Dibujar encabezado del usuario solo al inicio de sus acciones
                 if (firstActionOfUser) {
-                    drawUserHeader(usuario, rangoFechas); // Incluye el título solo aquí
-                    firstActionOfUser = false; // Asegura que se dibuja una sola vez por usuario
+                    drawUserHeader(usuario, rangoFechas);
+                    firstActionOfUser = false; 
                 }
 
                 // Dibuja acción principal
@@ -326,14 +321,13 @@ const generatePDFTrazabilidad = async (usuarioInfo, trazabilidadData) => {
         };
 
         const drawInfoCard = (label, value) => {
-            const cardHeight = 16; // Más altura
-            doc.setFillColor(240, 248, 255); // Fondo celeste claro
-            doc.setDrawColor(200, 200, 200); // Borde gris claro
+            const cardHeight = 16; 
+            doc.setFillColor(240, 248, 255); 
+            doc.setDrawColor(200, 200, 200); 
             doc.roundedRect(MARGIN_X, startY, pageWidth - 2 * MARGIN_X, cardHeight, 4, 4, "FD");
 
-            // Estilo del texto
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(14); // Tamaño más grande
+            doc.setFontSize(14); 
             doc.setTextColor(41, 76, 119);
             doc.text(label, MARGIN_X + 8, startY + 10);
 
@@ -344,17 +338,16 @@ const generatePDFTrazabilidad = async (usuarioInfo, trazabilidadData) => {
         };
 
         const drawHighlightedDate = () => {
-            // Resaltado celeste como subrayado
             const dateText = `Reporte generado el: ${new Date().toLocaleDateString()}`;
             const dateWidth = doc.getTextWidth(dateText);
 
-            doc.setFillColor(200, 230, 255); // Fondo celeste resaltado
-            doc.rect(MARGIN_X, startY + 4, dateWidth + 10, 15, "F"); // Rectángulo de fondo
+            doc.setFillColor(200, 230, 255); 
+            doc.rect(MARGIN_X, startY + 4, dateWidth + 10, 15, "F");
 
             doc.setFont("helvetica", "bold");
             doc.setFontSize(14);
-            doc.setTextColor(0, 0, 0); // Texto negro
-            doc.text(dateText, MARGIN_X + 5, startY + 14); // Centrado vertical dentro del resaltado
+            doc.setTextColor(0, 0, 0);
+            doc.text(dateText, MARGIN_X + 5, startY + 14); 
             startY += 20;
         };
 
@@ -368,7 +361,7 @@ const generatePDFTrazabilidad = async (usuarioInfo, trazabilidadData) => {
             drawInfoCard(`Usuario: ${usuario}`, `Acciones: ${acciones.length}`);
         });
 
-        drawHighlightedDate(); // Fecha resaltada
+        drawHighlightedDate(); 
 
         const formattedDate = new Date().toISOString().split("T")[0];
         doc.save(`Trazabilidad_Reporte_${formattedDate}.pdf`);
