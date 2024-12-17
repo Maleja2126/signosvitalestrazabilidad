@@ -4,6 +4,7 @@ import { FaSearch, FaInfoCircle, FaCheck, FaTimes, FaFileExport, FaListAlt, FaFi
 import DetalleTrazabilidadModal from "../components/DetalleTrazabilidadModal";
 import generatePDFTrazabilidad from "../services/generatePDFTrazabilidad";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify"; 
 
 const TrazabilidadPage = () => {
   const [trazabilidad, setTrazabilidad] = useState([]);
@@ -104,7 +105,7 @@ const TrazabilidadPage = () => {
           );
 
     if (selectedData.length === 0) {
-        alert("No hay registros seleccionados.");
+        toast.warn("No hay registros seleccionados."); // Mensaje de advertencia
         return;
     }
 
@@ -116,10 +117,9 @@ const TrazabilidadPage = () => {
         };
 
         await generatePDFTrazabilidad(usuarioInfo, selectedData);
-        alert("PDF generado exitosamente.");
     } catch (error) {
         console.error("Error al generar PDF:", error);
-        alert("Hubo un error al generar el PDF.");
+        toast.error("Hubo un error al generar el PDF."); 
     }
 };
 
