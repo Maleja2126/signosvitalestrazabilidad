@@ -70,6 +70,9 @@ exports.registerPatient = async (req, res) => {
     const responsable_username = req.user.username;
 
     try {
+        // Asignar valor por defecto a created_at si no está presente
+        const finalCreatedAt = created_at || new Date(); // Si no se pasa, se usa la fecha actual
+
         // Inserción en la tabla de pacientes
         const [result] = await db.query(
             `INSERT INTO patients 
@@ -86,7 +89,7 @@ exports.registerPatient = async (req, res) => {
                 tipo_identificacion,
                 ubicacion,
                 status || 'activo',
-                created_at,
+                finalCreatedAt, // Usamos la fecha de creación asignada
                 age_group,
                 responsable_username,
             ]
@@ -111,7 +114,7 @@ exports.registerPatient = async (req, res) => {
                 tipo_identificacion,
                 ubicacion,
                 status: status || 'activo',
-                created_at: formatFecha(created_at), // Formato DD/MM/YYYY
+                created_at: finalCreatedAt, // Asegúrate de pasar la fecha final aquí también
                 age_group,
                 responsable_username,
             }
