@@ -48,7 +48,7 @@ export const generatePatientPDF = (patientInfo, isPediatric, filteredHistory, fi
         { content: formatDate(record.fecha_nacimiento), styles: { fillColor: isModified(record.fecha_nacimiento, nextRecord.fecha_nacimiento) ? [144, 238, 144] : null } },
         { content: record.status, styles: { textColor: record.status === 'activo' ? [0, 128, 0] : [255, 0, 0] } },
         { content: record.age_group, styles: { fillColor: isModified(record.age_group, nextRecord.age_group) ? [144, 238, 144] : null } },
-        { content: record.responsable_registro, styles: { fillColor: isModified(record.responsable_registro, nextRecord.responsable_registro) ? [144, 238, 144] : null } },
+        { content: record.responsable_registro? record.responsable_registro:"-", styles: { fillColor: isModified(record.responsable_registro, nextRecord.responsable_registro) ? [144, 238, 144] : null } },
       ];
     });
 

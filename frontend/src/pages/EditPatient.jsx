@@ -128,7 +128,7 @@ const EditPatient = () => {
                 toast.error("No se encontró un token. Por favor, inicia sesión.");
                 return;
             }
-    
+
             await updatePatient(idPaciente, {
                 primer_nombre: primerNombre,
                 segundo_nombre: segundoNombre,
@@ -140,10 +140,10 @@ const EditPatient = () => {
                 fecha_nacimiento: fechaNacimiento,
                 status,
                 edad,
-                age_group: ageGroup, 
+                age_group: ageGroup,
             }, token // Pasa el token al servicio
 
-        );
+            );
             toast.success("Paciente actualizado exitosamente");
             navigate("/search-patient");
         } catch (error) {
@@ -167,13 +167,14 @@ const EditPatient = () => {
         }
     };
 
-   return (
+    return (
         <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
             <form onSubmit={handleUpdate} className="w-full max-w-lg p-4 bg-white rounded shadow-lg">
-                
-                <h2 className="text-lg font-bold mb-4 text-center text-black flex items-center justify-center gap-2">
-                    <FaClipboard size={20} /> Editar paciente
+
+                <h2 className="text-2xl font-bold mb-4 text-center text-blue-800 flex items-center justify-center gap-2">
+                    <FaClipboard size={24} className="text-blue-800" /> Editar paciente
                 </h2>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                     {/* Primer Nombre */}
                     <div className="flex flex-col">
@@ -197,7 +198,7 @@ const EditPatient = () => {
                             className="w-full max-w-sm p-2 text-sm border border-gray-300 rounded"
                         />
                     </div>
-    
+
                     {/* Primer Apellido */}
                     <div className="flex flex-col">
                         <label htmlFor="primerApellido" className="text-sm font-semibold mb-1">Primer apellido</label>
@@ -220,7 +221,7 @@ const EditPatient = () => {
                             className="w-full max-w-sm p-2 text-sm border border-gray-300 rounded"
                         />
                     </div>
-    
+
                     {/* Tipo de Identificación */}
                     <div className="flex flex-col">
                         <label htmlFor="tipoIdentificacion" className="text-sm font-semibold mb-1">Tipo de identificación</label>
@@ -234,7 +235,7 @@ const EditPatient = () => {
                             <option value="tarjeta de identidad">Tarjeta de Identidad</option>
                         </select>
                     </div>
-    
+
                     {/* Número de Identificación */}
                     <div className="flex flex-col">
                         <label htmlFor="numeroIdentificacion" className="text-sm font-semibold mb-1">Número de identificación</label>
@@ -246,7 +247,7 @@ const EditPatient = () => {
                             className="w-full max-w-sm p-2 text-sm border border-gray-300 rounded"
                         />
                     </div>
-    
+
                     {/* Fecha de Nacimiento */}
                     <div className="flex flex-col">
                         <label htmlFor="fechaNacimiento" className="text-sm font-semibold mb-1">Fecha de nacimiento</label>
@@ -258,7 +259,7 @@ const EditPatient = () => {
                             className="w-full max-w-sm p-2 text-sm border border-gray-300 rounded"
                         />
                     </div>
-    
+
                     {/* Ubicación */}
                     <div className="flex flex-col">
                         <label htmlFor="ubicacion" className="text-sm font-semibold mb-1">Ubicación (habitación)</label>
@@ -270,7 +271,7 @@ const EditPatient = () => {
                             className="w-full max-w-sm p-2 text-sm border border-gray-300 rounded"
                         />
                     </div>
-    
+
                     {/* Estado */}
                     <div className="flex flex-col sm:col-span-2">
                         <label htmlFor="status" className="text-sm font-semibold mb-1">Estado</label>
@@ -285,13 +286,13 @@ const EditPatient = () => {
                         </select>
                     </div>
                 </div>
-    
+
                 {/* Mostrar Edad y Tipo de Paciente */}
                 <div className="mb-4 p-4 bg-gray-50 rounded border border-gray-300 text-sm">
                     <p className="mb-2"><span className="font-semibold">Edad:</span> {displayAge()}</p>
                     <p><span className="font-semibold">Tipo de paciente:</span> {ageGroup}</p>
                 </div>
-    
+
                 <div className="flex justify-center gap-4 mt-4">
                     <button
                         type="button"
@@ -302,14 +303,14 @@ const EditPatient = () => {
                     </button>
                     <button
                         type="submit"
-                        className="flex items-center px-3 py-2 bg-blue-500 text-white text-sm font-bold rounded hover:bg-blue-600 transition"
+                        className="flex items-center px-3 py-2 bg-green-500 text-white text-sm font-bold rounded hover:bg-blue-600 transition"
                     >
                         <FaSave size={16} className="mr-1" /> Guardar Cambios
                     </button>
                 </div>
             </form>
         </div>
-    );       
+    );
 };
 
 export default EditPatient;

@@ -134,7 +134,7 @@ const PatientRegister = () => {
                 className="w-full max-w-lg p-4 bg-white rounded shadow-lg"
             >
                 {/* Encabezado */}
-                <h2 className="text-lg font-bold mb-4 text-center text-black flex items-center justify-center gap-2">
+                <h2 className="text-2xl font-bold mb-5 text-center text-blue-800 flex items-center justify-center gap-2">
                     <FaClipboard size={20} /> Registrar paciente
                 </h2>
 
@@ -292,7 +292,7 @@ const PatientRegister = () => {
                     </button>
                     <button
                         type="submit"
-                        className="flex items-center px-3 py-2 bg-blue-500 text-white text-sm font-bold rounded hover:bg-blue-600 transition"
+                        className="flex items-center px-3 py-2 bg-green-500 text-white text-sm font-bold rounded hover:bg-green-600 transition"
                     >
                         <FaSave size={16} className="mr-1" /> Guardar Cambios
                     </button>
