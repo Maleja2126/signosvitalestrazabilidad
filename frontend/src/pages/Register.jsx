@@ -21,7 +21,6 @@ const Register = () => {
         const file = e.target.files[0];
         if (file) {
             setProfileImage(file);
-            // Crear preview de la imagen
             const reader = new FileReader();
             reader.onloadend = () => {
                 setPreviewImage(reader.result);
@@ -162,3 +161,4 @@ const Register = () => {
 };
 
 export default Register;
+//quedo check todo jejej
