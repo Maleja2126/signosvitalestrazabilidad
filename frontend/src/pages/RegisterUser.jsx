@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { register } from "../services/authService";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { FiUpload, FiHome } from "react-icons/fi";
+import { FiHome, FiUser } from "react-icons/fi";
 import { FaEye, FaEyeSlash, FaUserPlus, FaExclamationTriangle } from "react-icons/fa";
+import Select from "react-select";
 
 const RegisterUser = () => {
     const [username, setUsername] = useState("");
@@ -19,6 +20,11 @@ const RegisterUser = () => {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const navigate = useNavigate();
+    const options = [
+        { value: "user", label: "Enfermero/a" },
+        { value: "jefe", label: "Jefe de enfermería" },
+        { value: "staff", label: "Médico/a" },
+    ];
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -107,23 +113,35 @@ const RegisterUser = () => {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-r from-white-100 via-white-200 to-white-300 overflow-y-auto">
-            <form onSubmit={handleRegister} className="w-30 max-w-30 p-6 bg-white rounded-xl shadow-xl space-y-4">
-                <h2 className="text-2xl font-extrabold text-center text-blue-600 flex items-center justify-center gap-2">
-                    <FaUserPlus size={28} /> Registrar nuevo usuario
+        <div
+            className="fixed inset-0 flex items-center justify-center bg-white"
+            style={{ marginTop: "60px" }}
+        >
+            <form
+                onSubmit={handleRegister}
+                className="w-full max-w-xl p-6 bg-white border border-gray-300 rounded-2xl shadow-lg space-y-4"
+            >
+                <h2
+                    style={{
+                        fontWeight: "bold",
+                        color: "#2563eb",
+                        textAlign: "center",
+                    }}
+                    className="text-2xl flex items-center justify-center gap-2"
+                >
+                    <FaUserPlus size={24} /> Registrar nuevo usuario
                 </h2>
 
-
-                <div className="flex flex-col items-center mb-4">
-                    <div className="w-24 h-24 rounded-full overflow-hidden mb-3 bg-gray-200 flex items-center justify-center shadow-lg">
+                <div className="flex flex-col items-center">
+                    <div className="w-24 h-24 rounded-full overflow-hidden mb-4 bg-gray-200 flex items-center justify-center shadow-md">
                         {previewImage ? (
                             <img src={previewImage} alt="Profile preview" className="w-full h-full object-cover" />
                         ) : (
-                            <FiUpload size={24} className="text-gray-500" />
+                            <FiUser size={40} className="text-gray-400" />
                         )}
                     </div>
-                    <label className="cursor-pointer bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out shadow-md">
-                        <span>Subir imagen de perfil</span>
+                    <label className="cursor-pointer bg-gray-600 text-white px-4 py-2 text-sm rounded-md hover:bg-blue-700 transition duration-300 ease-in-out shadow-sm">
+                        Subir imagen de perfil
                         <input
                             type="file"
                             accept="image/*"
@@ -133,90 +151,138 @@ const RegisterUser = () => {
                     </label>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <input
-                        type="text"
-                        placeholder="Nombres y apellidos"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 transition duration-300"
-                    />
-                    <input
-                        type="text"
-                        placeholder="Número de identificación"
-                        value={numeroIdentificacion}
-                        onChange={(e) => setNumeroIdentificacion(e.target.value)}
-                        className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 transition duration-300"
-                    />
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col">
+                        <label htmlFor="username" className="text-sm font-medium text-gray-700 mb-1">
+                            Nombres y apellidos
+                        </label>
+                        <input
+                            type="text"
+                            id="username"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            className="w-full h-12 p-3 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-400"
+                        />
+                    </div>
+                    <div className="flex flex-col">
+                        <label htmlFor="numeroIdentificacion" className="text-sm font-medium text-gray-700 mb-1">
+                            Número de identificación
+                        </label>
+                        <input
+                            type="text"
+                            id="numeroIdentificacion"
+                            value={numeroIdentificacion}
+                            onChange={(e) => setNumeroIdentificacion(e.target.value)}
+                            className="w-full h-12 p-3 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-400"
+                        />
+                    </div>
+                </div>
+
+                <div className="flex flex-col">
+                    <label htmlFor="email" className="text-sm font-medium text-gray-700 mb-1">
+                        Correo electrónico
+                    </label>
                     <input
                         type="email"
-                        placeholder="Correo electrónico"
+                        id="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full col-span-2 md:col-span-2 p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 transition duration-300"
+                        className="w-full h-12 p-3 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-400"
                     />
-                    <div className="relative col-span-2">
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="relative flex flex-col">
+                        <label htmlFor="password" className="text-sm font-medium text-gray-700 mb-1">
+                            Contraseña
+                        </label>
                         <input
                             type={showPassword ? "text" : "password"}
-                            placeholder="Contraseña"
+                            id="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 transition duration-300"
+                            className="w-full h-12 p-3 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-400"
                         />
                         <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-4 top-3 text-gray-500"
+                            className="absolute right-3 top-9 text-gray-500"
                         >
-                            {showPassword ? <FaEyeSlash size={22} /> : <FaEye size={22} />}
+                            {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
                         </button>
                     </div>
-                    <div className="relative col-span-2">
+                    <div className="relative flex flex-col">
+                        <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700 mb-1">
+                            Confirmar contraseña
+                        </label>
                         <input
                             type={showConfirmPassword ? "text" : "password"}
-                            placeholder="Confirmar contraseña"
+                            id="confirmPassword"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
-                            className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 transition duration-300"
+                            className="w-full h-12 p-3 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-400"
                         />
                         <button
                             type="button"
                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                            className="absolute right-4 top-3 text-gray-500"
+                            className="absolute right-3 top-9 text-gray-500"
                         >
-                            {showConfirmPassword ? <FaEyeSlash size={22} /> : <FaEye size={22} />}
+                            {showConfirmPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
                         </button>
                     </div>
                 </div>
 
-                <select
-                    value={role}
-                    onChange={(e) => setRole(e.target.value)}
-                    className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 transition duration-300"
-                >
-                    <option value="" disabled>Selecciona el Rol</option> {/* Esto aparecerá inicialmente */}
-                    <option value="user">Enfermero/a</option>
-                    <option value="jefe">Jefe de enfermería</option>
-                    <option value="staff">Médico/a</option>
-                </select>
+                <div className="flex flex-col">
+                    <label htmlFor="role" className="text-sm font-medium text-gray-700 mb-1">
+                        Rol
+                    </label>
+                    <Select
+                        id="role"
+                        options={options}
+                        placeholder="Selecciona el Rol"
+                        value={options.find((option) => option.value === role)}
+                        onChange={(selectedOption) => setRole(selectedOption?.value || "")}
+                        classNamePrefix="custom-select"
+                        styles={{
+                            control: (base) => ({
+                                ...base,
+                                border: "1px solid #D1D5DB",
+                                borderRadius: "0.375rem",
+                                boxShadow: "none",
+                                padding: "3px",
+                                "&:hover": { borderColor: "#3B82F6" },
+                            }),
+                            menu: (base) => ({
+                                ...base,
+                                zIndex: 9999, // Asegura que el menú esté por encima
+                            }),
+                            placeholder: (base) => ({
+                                ...base,
+                                color: "#9CA3AF", // Color del texto placeholder
+                            }),
+                        }}
+                        menuPortalTarget={document.body} // Renderiza el menú dentro del body
+                        menuPlacement="auto" // Abre hacia arriba o abajo automáticamente
+                    />
+                </div>
 
-
-                <div className="flex justify-center gap-6 mt-6">
+                <div className="flex justify-center gap-6">
                     <button
                         type="button"
-                        onClick={handleGoBack} // Llama a la función para mostrar el modal
-                        className="flex items-center px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition duration-300 shadow-md"
+                        onClick={handleGoBack}
+                        className="flex items-center px-6 py-3 bg-blue-600 text-white font-bold rounded-md hover:bg-blue-700 transition duration-300 shadow-md"
                     >
-                        <FiHome size={22} className="mr-2" /> Regresar
+                        <FiHome size={20} className="mr-2" /> Regresar
                     </button>
                     <button
                         type="submit"
-                        className="flex items-center px-6 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-blue-700 transition duration-300 shadow-md"
+                        className="flex items-center px-6 py-3 bg-green-600 text-white font-bold rounded-md hover:bg-green-700 transition duration-300 shadow-md"
                     >
-                        <FaUserPlus size={22} className="mr-2" /> Registrar
+                        <FaUserPlus size={20} className="mr-2" /> Registrar
                     </button>
                 </div>
             </form>
+
             {/* Modal de confirmación */}
             {showModal && (
                 <div className="fixed inset-0 flex justify-center items-center bg-gray-500 bg-opacity-50">
