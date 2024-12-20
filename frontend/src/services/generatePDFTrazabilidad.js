@@ -86,6 +86,13 @@ const renderTable = (doc, startY, data, title, showOnlyNew = false) => {
   return doc.lastAutoTable.finalY + 10;
 };
 
+const extractPatientData = (data) => {
+  if (data && typeof data === "object" && data.paciente) {
+    return data.paciente;
+  }
+  return null;
+};
+
 const generatePDFTrazabilidad = async (usuarioInfo, trazabilidadData) => {
   try {
     const doc = new jsPDF();
@@ -131,11 +138,21 @@ const generatePDFTrazabilidad = async (usuarioInfo, trazabilidadData) => {
       if (accion.datos_nuevos && typeof accion.datos_nuevos === "string") {
         const parsedNuevos = JSON.parse(accion.datos_nuevos);
         startY = renderTable(doc, startY, parsedNuevos, "Datos Nuevos", true);
+
+        const patientData = extractPatientData(parsedNuevos);
+        if (patientData) {
+          startY = renderTable(doc, startY, patientData, "Información del Paciente");
+        }
       }
 
       if (accion.datos_antiguos && typeof accion.datos_antiguos === "string") {
         const parsedAntiguos = JSON.parse(accion.datos_antiguos);
         startY = renderTable(doc, startY, parsedAntiguos, "Datos Anteriores");
+
+        const patientData = extractPatientData(parsedAntiguos);
+        if (patientData) {
+          startY = renderTable(doc, startY, patientData, "Información del Paciente");
+        }
       }
 
       if (accion.paciente && Object.keys(accion.paciente).length > 0) {
