@@ -97,8 +97,8 @@ const PatientRecordHistory = () => {
         const group = calculateAgeGroup(date);
         setAgeGroup(group);
     };
-    // Cargar los registros del paciente
 
+    // Cargar los registros del paciente
     const loadPatientRecords = async () => {
         try {
             const response = await fetchPatientRecords(idPaciente);
@@ -315,9 +315,10 @@ const PatientRecordHistory = () => {
                         <p><strong>Nombre:</strong> {patientInfo.primer_nombre} {patientInfo.segundo_nombre} {patientInfo.primer_apellido} {patientInfo.segundo_apellido}</p>
                         <p><strong>Tipo de identificación:</strong> {patientInfo.tipo_identificacion}</p>
                         <p><strong>Número de identificación:</strong> {patientInfo.numero_identificacion}</p>
-                        <p><strong>Ubicación (habitación):</strong> {patientInfo.ubicacion}</p>
+                        <p><strong>Fecha de Nacimiento:</strong> {format(new Date(patientInfo.fecha_nacimiento), "dd/MM/yyyy")}</p>
                         <p><strong>Edad:</strong> {edad} {ageUnit}</p>
                         <p><strong>Tipo de Paciente:</strong> {ageGroup}</p>
+                        <p><strong>Ubicación (habitación):</strong> {patientInfo.ubicacion}</p>
                     </div>
                     <span className={`font-bold ${patientInfo.status === "activo" ? "text-green-500" : "text-red-500"}`}>
                         Paciente {patientInfo.status === "activo" ? "Activo" : "Inactivo"}

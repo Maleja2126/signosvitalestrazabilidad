@@ -77,6 +77,19 @@ const SearchPatient = () => {
         return 0;
     });
 
+    const capitalizeWords = (text) => {
+        if (!text) return text;
+        const exceptions = ["de", "del", "y"]; // Palabras que deben permanecer en minúsculas
+        return text
+            .split(" ")
+            .map((word, index) => 
+                exceptions.includes(word.toLowerCase()) && index !== 0
+                    ? word.toLowerCase()
+                    : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+            )
+            .join(" ");
+    };    
+
     // Calcular la paginación
     const totalPages = Math.ceil(sortedPatients.length / patientsPerPage);
     const indexOfLastPatient = currentPage * patientsPerPage;
@@ -249,8 +262,8 @@ const SearchPatient = () => {
                         <th className="p-4">Segundo nombre</th>
                         <th className="p-4">Primer apellido</th>
                         <th className="p-4">Segundo apellido</th>
-                        <th className="p-4">Número de identificación</th>
                         <th className="p-4">Tipo de identificación</th>
+                        <th className="p-4">Número de identificación</th>
                         <th className="p-4">Ubicación</th>
                         <th className="p-4">Estado</th>
                         <th className="p-4">Editar</th>
@@ -267,8 +280,8 @@ const SearchPatient = () => {
                             <td className="p-4">{patient.segundo_nombre}</td>
                             <td className="p-4">{patient.primer_apellido}</td>
                             <td className="p-4">{patient.segundo_apellido}</td>
+                            <td className="p-4">{capitalizeWords(patient.tipo_identificacion)}</td>
                             <td className="p-4">{patient.numero_identificacion}</td>
-                            <td className="p-4">{patient.tipo_identificacion}</td>
                             <td className="p-4">{patient.ubicacion}</td>
                             <td className="p-4">
                                 <button

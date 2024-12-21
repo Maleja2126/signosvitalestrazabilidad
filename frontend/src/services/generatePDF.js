@@ -30,6 +30,21 @@ const generatePDF = async (patientInfo, edad, ageUnit, ageGroup, filteredRecords
             return `${day}/${month}/${year}`;
         };
 
+        const capitalizeWords = (text) => {
+            const excludedWords = ["de"]; 
+            return text
+                .toLowerCase()
+                .split(" ")
+                .map((word, index) => {
+                    // Capitalizar si no está en la lista de excluidas o es la primera palabra
+                    if (!excludedWords.includes(word) || index === 0) {
+                        return word.charAt(0).toUpperCase() + word.slice(1);
+                    }
+                    return word;
+                })
+                .join(" ");
+        };        
+
         // Título del documento
         doc.setFont("helvetica", "bold");
         doc.setFontSize(22);
@@ -38,42 +53,43 @@ const generatePDF = async (patientInfo, edad, ageUnit, ageGroup, filteredRecords
         // Información del paciente
         doc.setFont("helvetica", "bold");
         doc.setFontSize(12);
-        doc.text("Nombres y apellidos:", 20, 30);
+        doc.text("Nombre:", 20, 30);
         doc.text("Tipo de Identificación:", 20, 35);
         doc.text("Número de Identificación:", 20, 40);
-        doc.text("Edad:", 20, 45);
-        doc.text("Tipo de Paciente:", 20, 50);
-        doc.text("Ubicación (habitación):", 20, 55);
-        doc.text("Estado:", 20, 60);
+        doc.text("Fecha de Nacimiento:", 20, 45); // Nueva línea para la fecha de nacimiento
+        doc.text("Edad:", 20, 50);
+        doc.text("Tipo de Paciente:", 20, 55);
+        doc.text("Ubicación (habitación):", 20, 60);
+        doc.text("Estado:", 20, 65);
 
         doc.setFont("helvetica", "normal");
-        doc.text(`${patientInfo.primer_nombre} ${patientInfo.segundo_nombre} ${patientInfo.primer_apellido} ${patientInfo.segundo_apellido}`, 64, 30);
-        doc.text(patientInfo.tipo_identificacion, 66, 35);
+        doc.text(`${patientInfo.primer_nombre} ${patientInfo.segundo_nombre} ${patientInfo.primer_apellido} ${patientInfo.segundo_apellido}`, 39, 30);
+        doc.text(capitalizeWords(patientInfo.tipo_identificacion), 66, 35); // Aplicado a Tipo de Identificación
         doc.text(patientInfo.numero_identificacion, 73, 40);
-        doc.text(`${edad} ${ageUnit}`, 33, 45);
-        doc.text(ageGroup, 56, 50);
-        doc.text(patientInfo.ubicacion, 68, 55);
+        doc.text(formatDate(patientInfo.fecha_nacimiento), 64, 45);
+        doc.text(`${edad} ${ageUnit}`, 33, 50);
+        doc.text(ageGroup, 56, 55);
+        doc.text(patientInfo.ubicacion, 68, 60);
 
         if (patientInfo.status === 'activo') {
             doc.setTextColor(0, 128, 0); // Verde
-            doc.text("Activo", 37, 60);
+            doc.text("Activo", 37, 65);
         } else {
             doc.setTextColor(255, 0, 0); // Rojo
-            doc.text("Inactivo", 37, 60);
+            doc.text("Inactivo", 37, 65);
         }
         doc.setTextColor(0, 0, 0); // Restablecer color
 
         // Línea divisoria
         doc.setLineWidth(0.7);
         doc.setDrawColor(0, 153, 255); // Azul
-        doc.line(20, 65, 190, 65);
+        doc.line(20, 70, 190, 70); // Ajuste en la posición Y de la línea
 
         // Datos de la tabla
         const tableColumns = [
             "Fecha", "Hora", "Pulso", "T °C", "FR",
-            "TAS", "TAD", "TAM", "SatO2 %", "Peso", "Observaciones", "Responsable"
+            "TAS", "TAD", "TAM", "SatO2 %", "Peso", "Talla", "Observaciones", "Responsable"
         ];
-
 
         // Definir los rangos específicos
         const vitalSignRanges = {
@@ -199,8 +215,9 @@ const generatePDF = async (patientInfo, edad, ageUnit, ageGroup, filteredRecords
                     },
                 },
                 { content: record.peso_pediatrico || record.peso_adulto, styles: {} },
+                { content: record.talla || "-", styles: {} }, 
                 { content: record.observaciones || "-", styles: {} },
-                { content: record.responsable_signos || "No disponible", styles: {} },  // Nueva columna para el responsable
+                { content: record.responsable_signos || "No disponible", styles: {} }, 
 
             ];
         });
@@ -210,7 +227,7 @@ const generatePDF = async (patientInfo, edad, ageUnit, ageGroup, filteredRecords
         autoTable(doc, {
             head: [tableColumns],
             body: tableData,
-            startY: 70,
+            startY: 75,
             theme: 'striped',
             headStyles: {
                 fillColor: [54, 162, 235],
