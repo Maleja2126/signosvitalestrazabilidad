@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { fetchTrazabilidad } from "../services/trazabilidadService";
 import { FaSearch, FaInfoCircle, FaCheck, FaTimes, FaFileExport, FaListAlt, FaFilter, FaArrowLeft } from "react-icons/fa"
+import { FiHome } from "react-icons/fi";
 import DetalleTrazabilidadModal from "../components/DetalleTrazabilidadModal";
 import generatePDFTrazabilidad from "../services/generatePDFTrazabilidad";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify"; 
+import { toast } from "react-toastify";
 
 const TrazabilidadPage = () => {
   const [trazabilidad, setTrazabilidad] = useState([]);
@@ -20,7 +21,7 @@ const TrazabilidadPage = () => {
   const [mensajeSeleccion, setMensajeSeleccion] = useState("");
   const [generatingPDF, setGeneratingPDF] = useState(false);
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -99,29 +100,29 @@ const TrazabilidadPage = () => {
 
   const handleExportarPDF = async (exportarTodo = false) => {
     const selectedData = exportarTodo
-        ? trazabilidad // Exporta todo
-        : Object.entries(selectedActions).flatMap(([userName, actionIds]) =>
-              trazabilidad.filter((item) => actionIds.includes(item.id))
-          );
+      ? trazabilidad // Exporta todo
+      : Object.entries(selectedActions).flatMap(([userName, actionIds]) =>
+        trazabilidad.filter((item) => actionIds.includes(item.id))
+      );
 
     if (selectedData.length === 0) {
-        toast.warn("No hay registros seleccionados."); // Mensaje de advertencia
-        return;
+      toast.warn("No hay registros seleccionados."); // Mensaje de advertencia
+      return;
     }
 
     try {
-        const usuarioInfo = {
-            nombre: selectedData[0]?.usuario_nombre || "Desconocido",
-            fechaInicio: new Date(Math.min(...selectedData.map((item) => new Date(item.fecha_hora)))).toISOString(),
-            fechaFin: new Date(Math.max(...selectedData.map((item) => new Date(item.fecha_hora)))).toISOString(),
-        };
+      const usuarioInfo = {
+        nombre: selectedData[0]?.usuario_nombre || "Desconocido",
+        fechaInicio: new Date(Math.min(...selectedData.map((item) => new Date(item.fecha_hora)))).toISOString(),
+        fechaFin: new Date(Math.max(...selectedData.map((item) => new Date(item.fecha_hora)))).toISOString(),
+      };
 
-        await generatePDFTrazabilidad(usuarioInfo, selectedData);
+      await generatePDFTrazabilidad(usuarioInfo, selectedData);
     } catch (error) {
-        console.error("Error al generar PDF:", error);
-        toast.error("Hubo un error al generar el PDF."); 
+      console.error("Error al generar PDF:", error);
+      toast.error("Hubo un error al generar el PDF.");
     }
-};
+  };
 
   const handleClearFilters = () => {
     setFechaInicio(""); // Restablecer campo de fecha inicio
@@ -186,7 +187,7 @@ const TrazabilidadPage = () => {
                 <span>Filtrar</span>
               </button>
               <button
-                className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 transition flex items-center space-x-2"
+                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition flex items-center space-x-2"
                 onClick={handleClearFilters}
               >
                 <FaTimes className="text-sm" />
@@ -279,7 +280,7 @@ const TrazabilidadPage = () => {
 
             <div className="flex justify-center space-x-4 mt-4">
               <button
-                className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition flex items-center space-x-2"
+                className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-green-600 transition flex items-center space-x-2"
                 onClick={handleSelectAllFiltered}
               >
                 <FaListAlt /> {/* Icono de lista */}
@@ -293,14 +294,14 @@ const TrazabilidadPage = () => {
                 <span>Quitar Selecciones</span>
               </button>
               <button
-                className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 transition flex items-center space-x-2"
+                className="bg-gray-500 text-white px-6 py-2 rounded hover:bg-green-600 transition flex items-center space-x-2"
                 onClick={() => handleExportarPDF(false)}
               >
                 <FaCheck /> {/* Icono de cheque */}
                 <span>Exportar Seleccionados</span>
               </button>
               <button
-                className="bg-yellow-500 text-white px-6 py-2 rounded hover:bg-yellow-600 transition flex items-center space-x-2"
+                className="bg-gray-500 text-white px-6 py-2 rounded hover:bg-green-600 transition flex items-center space-x-2"
                 onClick={() => handleExportarPDF(true)}
               >
                 <FaFileExport /> {/* Icono de exportar */}
@@ -309,14 +310,14 @@ const TrazabilidadPage = () => {
             </div>
 
             {/* Botón para volver al panel */}
-          <div className="flex justify-center mt-4">
-            <button
-              className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 transition flex items-center space-x-2"
-              onClick={() => navigate('/admin-panel')}
-            >
-              <FaArrowLeft className="text-sm" />
-              <span>Volver al Panel</span>
-            </button>
+            <div className="flex justify-center mt-4">
+              <button
+                type="button"
+                onClick={() => navigate('/admin-panel')}
+                className="flex items-center px-6 py-3 bg-blue-600 text-white font-bold rounded-md hover:bg-blue-700 transition duration-300 shadow-md"
+              >
+                <FiHome size={20} className="mr-2" /> Regresar al Panel
+              </button>
             </div>
 
             <DetalleTrazabilidadModal

@@ -31,7 +31,7 @@ const generatePDF = async (patientInfo, edad, ageUnit, ageGroup, filteredRecords
         };
 
         const capitalizeWords = (text) => {
-            const excludedWords = ["de"]; 
+            const excludedWords = ["de"];
             return text
                 .toLowerCase()
                 .split(" ")
@@ -43,7 +43,7 @@ const generatePDF = async (patientInfo, edad, ageUnit, ageGroup, filteredRecords
                     return word;
                 })
                 .join(" ");
-        };        
+        };
 
         // Título del documento
         doc.setFont("helvetica", "bold");
@@ -215,9 +215,9 @@ const generatePDF = async (patientInfo, edad, ageUnit, ageGroup, filteredRecords
                     },
                 },
                 { content: record.peso_pediatrico || record.peso_adulto, styles: {} },
-                { content: record.talla || "-", styles: {} }, 
+                { content: record.talla || "-", styles: {} },
                 { content: record.observaciones || "-", styles: {} },
-                { content: record.responsable_signos || "No disponible", styles: {} }, 
+                { content: record.responsable_signos || "No disponible", styles: {} },
 
             ];
         });
@@ -276,8 +276,63 @@ const generatePDF = async (patientInfo, edad, ageUnit, ageGroup, filteredRecords
             yPosition += 110;  // Espacio entre gráficos, puedes ajustar si es necesario
             graphicsOnCurrentPage++;  // Incrementar el contador de gráficos por página
         });
-        // Guardar el PDF generado
-        doc.save(`Historial_Medico_${patientInfo.numero_identificacion}.pdf`);
+
+        // Formatear el nombre del archivo con el nombre completo del paciente y su número de identificación
+        const fileName = `Historial_Medico_${patientInfo.primer_nombre}_${patientInfo.primer_apellido}_${patientInfo.numero_identificacion}.pdf`;
+
+        // Guardar el PDF generado con el nombre formateado
+        doc.save(fileName);
+
+        // Generar archivo TXT
+        let txtContent = `Historial Médico del Paciente\n\n`;
+        txtContent += `Nombre: ${patientInfo.primer_nombre} ${patientInfo.segundo_nombre} ${patientInfo.primer_apellido} ${patientInfo.segundo_apellido}\n`;
+        txtContent += `Tipo de Identificación: ${capitalizeWords(patientInfo.tipo_identificacion)}\n`;
+        txtContent += `Número de Identificación: ${patientInfo.numero_identificacion}\n`;
+        txtContent += `Fecha de Nacimiento: ${formatDate(patientInfo.fecha_nacimiento)}\n`;
+        txtContent += `Edad: ${edad} ${ageUnit}\n`;
+        txtContent += `Tipo de Paciente: ${ageGroup}\n`;
+        txtContent += `Ubicación: ${patientInfo.ubicacion}\n`;
+        txtContent += `Estado: ${patientInfo.status === 'activo' ? 'Activo' : 'Inactivo'}\n\n`;
+
+        // Encabezados de la tabla
+        txtContent += `Registros:\n`;
+        txtContent += `${'Fecha'.padEnd(12)}${'Hora'.padEnd(8)}${'Pulso'.padEnd(8)}${'T °C'.padEnd(8)}${'FR'.padEnd(8)}${'TAS'.padEnd(8)}${'TAD'.padEnd(8)}${'TAM'.padEnd(8)}${'SatO2 %'.padEnd(10)}${'Peso'.padEnd(10)}${'Talla'.padEnd(8)}${'Observaciones'.padEnd(20)}${'Responsable'.padEnd(20)}\n`;
+
+        // Registros de la tabla
+        filteredRecords.forEach(record => {
+            txtContent += `${formatDate(record.record_date).padEnd(12)}` +
+                `${record.record_time.padEnd(8)}` +
+                `${record.pulso.toString().padEnd(8)}` +
+                `${record.temperatura.toString().padEnd(8)}` +
+                `${record.frecuencia_respiratoria.toString().padEnd(8)}` +
+                `${record.presion_sistolica.toString().padEnd(8)}` +
+                `${record.presion_diastolica.toString().padEnd(8)}` +
+                `${record.presion_media.toString().padEnd(8)}` +
+                `${record.saturacion_oxigeno.toString().padEnd(10)}` +
+                `${(record.peso_pediatrico || record.peso_adulto || "-").toString().padEnd(10)}` +
+                `${(record.talla || "-").toString().padEnd(8)}` +
+                `${(record.observaciones || "-").padEnd(20)}` +
+                `${(record.responsable_signos || "No disponible").padEnd(20)}\n`;
+        });
+
+        const sanitize = (str) => {
+            // Normalizar texto para eliminar acentos y caracteres especiales
+            return str
+                .normalize("NFD") // Descompone los caracteres acentuados en su forma base
+                .replace(/[\u0300-\u036f]/g, "") // Elimina los caracteres de marcas diacríticas (acentos)
+                .replace(/[^a-zA-Z0-9]/g, "_"); // Reemplazar caracteres no alfanuméricos por "_"
+        };
+        
+        // Formatear el nombre del archivo con el nombre completo del paciente y su número de identificación
+        const txtFileName = `Historial_Medico_${sanitize(patientInfo.primer_nombre)}_${sanitize(patientInfo.primer_apellido)}_${patientInfo.numero_identificacion}.txt`;
+        
+        // Descargar archivo TXT 
+        const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8' });
+        const txtLink = document.createElement('a');
+        txtLink.href = URL.createObjectURL(blob);
+        txtLink.download = txtFileName;
+        txtLink.click();        
+
     } catch (error) {
         console.error("Error generando el PDF:", error);
         toast.error("Hubo un error al generar el PDF.", {

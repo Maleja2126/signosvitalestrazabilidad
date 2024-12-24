@@ -171,7 +171,7 @@ const SearchUsers = () => {
                 onClick={() => navigate("/admin-panel")}
                 className="mt-5 flex items-center px-5 py-3 bg-blue-500 text-white font-bold rounded-full shadow-lg hover:bg-blue-600 transition"
             >
-                <FiHome className="mr-3" /> Volver al Panel
+                <FiHome className="mr-3" /> Regresar al Panel
             </button>
         </div>
     );

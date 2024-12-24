@@ -168,149 +168,178 @@ const EditPatient = () => {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
-            <form onSubmit={handleUpdate} className="w-full max-w-lg p-4 bg-white rounded shadow-lg">
-
-                <h2 className="text-2xl font-bold mb-4 text-center text-blue-800 flex items-center justify-center gap-2">
-                    <FaClipboard size={24} className="text-blue-800" /> Editar paciente
-                </h2>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                    {/* Primer Nombre */}
-                    <div className="flex flex-col">
-                        <label htmlFor="primerNombre" className="text-sm font-semibold mb-1">Primer nombre</label>
-                        <input
-                            id="primerNombre"
-                            type="text"
-                            value={primerNombre}
-                            onChange={(e) => setprimerNombre(e.target.value)}
-                            className="w-full max-w-sm p-2 text-sm border border-gray-300 rounded"
-                        />
+            <div className="flex items-center justify-center min-h-screen bg-gray-100">
+                <form
+                    onSubmit={handleUpdate}
+                    className="w-full max-w-lg p-8 bg-white rounded-lg shadow-lg my-8"
+                >
+                    {/* Encabezado */}
+                    <h2 className="text-3xl font-bold mb-8 text-center text-blue-800 flex items-center justify-center gap-2">
+                        <FaClipboard size={25} /> Editar paciente
+                    </h2>
+        
+                    {/* Campos en Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                        {/* Primer Nombre */}
+                        <div className="flex flex-col">
+                            <label htmlFor="primerNombre" className="text-sm font-semibold mb-1">
+                                Primer nombre
+                            </label>
+                            <input
+                                id="primerNombre"
+                                type="text"
+                                value={primerNombre}
+                                onChange={(e) => setprimerNombre(e.target.value)}
+                                className="w-full p-2.5 text-sm border border-gray-300 rounded-lg"
+                            />
+                        </div>
+        
+                        {/* Segundo Nombre */}
+                        <div className="flex flex-col">
+                            <label htmlFor="segundoNombre" className="text-sm font-semibold mb-1">
+                                Segundo nombre
+                            </label>
+                            <input
+                                id="segundoNombre"
+                                type="text"
+                                value={segundoNombre}
+                                onChange={(e) => setSegundoNombre(e.target.value)}
+                                className="w-full p-2.5 text-sm border border-gray-300 rounded-lg"
+                            />
+                        </div>
+        
+                        {/* Primer Apellido */}
+                        <div className="flex flex-col">
+                            <label htmlFor="primerApellido" className="text-sm font-semibold mb-1">
+                                Primer apellido
+                            </label>
+                            <input
+                                id="primerApellido"
+                                type="text"
+                                value={primerApellido}
+                                onChange={(e) => setprimerApellido(e.target.value)}
+                                className="w-full p-2.5 text-sm border border-gray-300 rounded-lg"
+                            />
+                        </div>
+        
+                        {/* Segundo Apellido */}
+                        <div className="flex flex-col">
+                            <label htmlFor="segundoApellido" className="text-sm font-semibold mb-1">
+                                Segundo apellido
+                            </label>
+                            <input
+                                id="segundoApellido"
+                                type="text"
+                                value={segundoApellido}
+                                onChange={(e) => setSegundoApellido(e.target.value)}
+                                className="w-full p-2.5 text-sm border border-gray-300 rounded-lg"
+                            />
+                        </div>
+        
+                        {/* Tipo de Identificación */}
+                        <div className="flex flex-col">
+                            <label htmlFor="tipoIdentificacion" className="text-sm font-semibold mb-1">
+                                Tipo de identificación
+                            </label>
+                            <select
+                                id="tipoIdentificacion"
+                                value={tipoIdentificacion}
+                                onChange={(e) => settipoIdentificacion(e.target.value)}
+                                className="w-full p-2.5 text-sm border border-gray-300 rounded-lg"
+                            >
+                                <option value="cédula de ciudadanía">Cédula de Ciudadanía</option>
+                                <option value="tarjeta de identidad">Tarjeta de Identidad</option>
+                            </select>
+                        </div>
+        
+                        {/* Número de Identificación */}
+                        <div className="flex flex-col">
+                            <label htmlFor="numeroIdentificacion" className="text-sm font-semibold mb-1">
+                                Número de identificación
+                            </label>
+                            <input
+                                id="numeroIdentificacion"
+                                type="text"
+                                value={numeroIdentificacion}
+                                onChange={(e) => setnumeroIdentificacion(e.target.value)}
+                                className="w-full p-2.5 text-sm border border-gray-300 rounded-lg"
+                            />
+                        </div>
+        
+                        {/* Fecha de Nacimiento */}
+                        <div className="flex flex-col">
+                            <label htmlFor="fechaNacimiento" className="text-sm font-semibold mb-1">
+                                Fecha de nacimiento
+                            </label>
+                            <input
+                                id="fechaNacimiento"
+                                type="date"
+                                value={fechaNacimiento}
+                                onChange={(e) => handleFechaNacimientoChange(e.target.value)}
+                                className="w-full p-2.5 text-sm border border-gray-300 rounded-lg"
+                            />
+                        </div>
+        
+                        {/* Ubicación */}
+                        <div className="flex flex-col">
+                            <label htmlFor="ubicacion" className="text-sm font-semibold mb-1">
+                                Ubicación (habitación)
+                            </label>
+                            <input
+                                id="ubicacion"
+                                type="text"
+                                value={ubicacion}
+                                onChange={(e) => setubicacion(e.target.value)}
+                                className="w-full p-2.5 text-sm border border-gray-300 rounded-lg"
+                            />
+                        </div>
+        
+                        {/* Estado */}
+                        <div className="flex flex-col sm:col-span-2">
+                            <label htmlFor="status" className="text-sm font-semibold mb-1">
+                                Estado
+                            </label>
+                            <select
+                                id="status"
+                                value={status}
+                                onChange={(e) => setStatus(e.target.value)}
+                                className="w-full p-2.5 text-sm border border-gray-300 rounded-lg"
+                            >
+                                <option value="activo">Activo</option>
+                                <option value="inactivo">Inactivo</option>
+                            </select>
+                        </div>
                     </div>
-                    {/* Segundo Nombre */}
-                    <div className="flex flex-col">
-                        <label htmlFor="segundoNombre" className="text-sm font-semibold mb-1">Segundo nombre</label>
-                        <input
-                            id="segundoNombre"
-                            type="text"
-                            value={segundoNombre}
-                            onChange={(e) => setSegundoNombre(e.target.value)}
-                            className="w-full max-w-sm p-2 text-sm border border-gray-300 rounded"
-                        />
+        
+                    {/* Mostrar Edad y Tipo de Paciente */}
+                    <div className="mb-4 p-3 bg-gray-50 rounded-lg text-sm border border-gray-300">
+                        <p className="mb-1">
+                            <span className="font-semibold">Edad:</span> {displayAge()}
+                        </p>
+                        <p>
+                            <span className="font-semibold">Tipo de paciente:</span> {ageGroup}
+                        </p>
                     </div>
-
-                    {/* Primer Apellido */}
-                    <div className="flex flex-col">
-                        <label htmlFor="primerApellido" className="text-sm font-semibold mb-1">Primer apellido</label>
-                        <input
-                            id="primerApellido"
-                            type="text"
-                            value={primerApellido}
-                            onChange={(e) => setprimerApellido(e.target.value)}
-                            className="w-full max-w-sm p-2 text-sm border border-gray-300 rounded"
-                        />
-                    </div>
-                    {/* Segundo Apellido */}
-                    <div className="flex flex-col">
-                        <label htmlFor="segundoApellido" className="text-sm font-semibold mb-1">Segundo apellido</label>
-                        <input
-                            id="segundoApellido"
-                            type="text"
-                            value={segundoApellido}
-                            onChange={(e) => setSegundoApellido(e.target.value)}
-                            className="w-full max-w-sm p-2 text-sm border border-gray-300 rounded"
-                        />
-                    </div>
-
-                    {/* Tipo de Identificación */}
-                    <div className="flex flex-col">
-                        <label htmlFor="tipoIdentificacion" className="text-sm font-semibold mb-1">Tipo de identificación</label>
-                        <select
-                            id="tipoIdentificacion"
-                            value={tipoIdentificacion}
-                            onChange={(e) => settipoIdentificacion(e.target.value)}
-                            className="w-full max-w-sm p-2 text-sm border border-gray-300 rounded"
+        
+                    {/* Botones */}
+                    <div className="flex justify-center gap-3">
+                        <button
+                            type="button"
+                            onClick={handleGoBack}
+                            className="flex items-center px-4 py-2.5 bg-gray-500 text-white font-bold rounded-lg shadow-md hover:bg-blue-600 transition"
                         >
-                            <option value="cédula de ciudadanía">Cédula de Ciudadanía</option>
-                            <option value="tarjeta de identidad">Tarjeta de Identidad</option>
-                        </select>
-                    </div>
-
-                    {/* Número de Identificación */}
-                    <div className="flex flex-col">
-                        <label htmlFor="numeroIdentificacion" className="text-sm font-semibold mb-1">Número de identificación</label>
-                        <input
-                            id="numeroIdentificacion"
-                            type="text"
-                            value={numeroIdentificacion}
-                            onChange={(e) => setnumeroIdentificacion(e.target.value)}
-                            className="w-full max-w-sm p-2 text-sm border border-gray-300 rounded"
-                        />
-                    </div>
-
-                    {/* Fecha de Nacimiento */}
-                    <div className="flex flex-col">
-                        <label htmlFor="fechaNacimiento" className="text-sm font-semibold mb-1">Fecha de nacimiento</label>
-                        <input
-                            id="fechaNacimiento"
-                            type="date"
-                            value={fechaNacimiento}
-                            onChange={(e) => handleFechaNacimientoChange(e.target.value)}
-                            className="w-full max-w-sm p-2 text-sm border border-gray-300 rounded"
-                        />
-                    </div>
-
-                    {/* Ubicación */}
-                    <div className="flex flex-col">
-                        <label htmlFor="ubicacion" className="text-sm font-semibold mb-1">Ubicación (habitación)</label>
-                        <input
-                            id="ubicacion"
-                            type="text"
-                            value={ubicacion}
-                            onChange={(e) => setubicacion(e.target.value)}
-                            className="w-full max-w-sm p-2 text-sm border border-gray-300 rounded"
-                        />
-                    </div>
-
-                    {/* Estado */}
-                    <div className="flex flex-col sm:col-span-2">
-                        <label htmlFor="status" className="text-sm font-semibold mb-1">Estado</label>
-                        <select
-                            id="status"
-                            value={status}
-                            onChange={(e) => setStatus(e.target.value)}
-                            className="w-full p-2 text-sm border border-gray-300 rounded"
+                            <FiHome size={18} className="mr-2" /> Regresar
+                        </button>
+                        <button
+                            type="submit"
+                            className="flex items-center px-4 py-2.5 bg-green-500 text-white font-bold rounded-lg shadow-md hover:bg-green-600 transition"
                         >
-                            <option value="activo">Activo</option>
-                            <option value="inactivo">Inactivo</option>
-                        </select>
+                            <FaSave size={18} className="mr-2" /> Guardar Cambios
+                        </button>
                     </div>
-                </div>
-
-                {/* Mostrar Edad y Tipo de Paciente */}
-                <div className="mb-4 p-4 bg-gray-50 rounded border border-gray-300 text-sm">
-                    <p className="mb-2"><span className="font-semibold">Edad:</span> {displayAge()}</p>
-                    <p><span className="font-semibold">Tipo de paciente:</span> {ageGroup}</p>
-                </div>
-
-                <div className="flex justify-center gap-4 mt-4">
-                    <button
-                        type="button"
-                        onClick={handleGoBack}
-                        className="flex items-center px-3 py-2 bg-blue-500 text-white text-sm font-bold rounded hover:bg-blue-600 transition"
-                    >
-                        <FiHome size={16} className="mr-1" /> Regresar
-                    </button>
-                    <button
-                        type="submit"
-                        className="flex items-center px-3 py-2 bg-green-500 text-white text-sm font-bold rounded hover:bg-blue-600 transition"
-                    >
-                        <FaSave size={16} className="mr-1" /> Guardar Cambios
-                    </button>
-                </div>
-            </form>
-        </div>
-    );
+                </form>
+            </div>
+        );        
 };
 
 export default EditPatient;

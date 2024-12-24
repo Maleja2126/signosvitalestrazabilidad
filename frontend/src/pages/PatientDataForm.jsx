@@ -96,163 +96,141 @@ const PatientDataForm = () => {
     }
 
     return (
-        <div className="flex flex-col items-center min-h-screen bg-gray-50 p-12">
-            <h1 className="text-4xl font-bold text-blue-700 mb-5"> 🩺Monitoreo General</h1>
+        <div className="flex flex-col items-center justify-center h-screen bg-gray-100 p-5">
+            <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-blue-600 mb-6">
+                🩺 Monitoreo General
+            </h1>
             <form
                 onSubmit={handleSubmit}
-                className="w-full max-w-4xl bg-white p-8 rounded-lg shadow-lg grid gap-6"
+                className="w-full max-w-4xl bg-white p-8 rounded-lg shadow-lg grid gap-4"
             >
-                {/* Fecha y hora */}
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-gray-600 font-semibold mb-2">Fecha Dato:</label>
+                        <label className="block text-gray-700 font-medium mb-1">Fecha Dato:</label>
                         <input
                             type="date"
                             value={recordDate}
                             onChange={(e) => setRecordDate(e.target.value)}
                             max={currentDate}
                             required
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
+                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
                         />
                     </div>
-
                     <div>
-                        <label className="block text-gray-600 font-semibold mb-2">Hora Dato:</label>
+                        <label className="block text-gray-700 font-medium mb-1">Hora Dato:</label>
                         <input
                             type="time"
                             value={recordTime}
                             onChange={(e) => setRecordTime(e.target.value)}
                             required
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
+                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
                         />
                     </div>
                 </div>
 
-                {/* Peso, talla y temperatura */}
-                <div className="grid grid-cols-3 gap-6">
-                    {ageGroup !== "Adulto" ? (
-                        <div>
-                            <label className="block text-gray-600 font-semibold mb-2">Peso Pediátrico (g/kg):</label>
-                            <input
-                                type="number"
-                                value={pesoPediatrico}
-                                onChange={(e) => setPesoPediatrico(e.target.value)}
-                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
-                            />
-                        </div>
-                    ) : (
-                        <div>
-                            <label className="block text-gray-600 font-semibold mb-2">Peso Adulto (kg):</label>
-                            <input
-                                type="number"
-                                value={pesoAdulto}
-                                onChange={(e) => setPesoAdulto(e.target.value)}
-                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
-                            />
-                        </div>
-                    )}
+                <div className="grid grid-cols-3 gap-4">
                     <div>
-                        <label className="block text-gray-600 font-semibold mb-2">Talla (cm):</label>
+                        <label className="block text-gray-700 font-medium mb-1">Peso Adulto (kg):</label>
+                        <input
+                            type="number"
+                            value={pesoAdulto}
+                            onChange={(e) => setPesoAdulto(e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-gray-700 font-medium mb-1">Talla (cm):</label>
                         <input
                             type="number"
                             value={talla}
                             onChange={(e) => setTalla(e.target.value)}
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
+                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
                         />
                     </div>
                     <div>
-                        <label className="block text-gray-600 font-semibold mb-2">Temperatura (°C):</label>
+                        <label className="block text-gray-700 font-medium mb-1">Temperatura (°C):</label>
                         <input
                             type="number"
                             value={temperatura}
                             onChange={(e) => setTemperatura(e.target.value)}
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
+                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
                         />
                     </div>
                 </div>
 
-                {/* Presiones */}
-                <div className="grid grid-cols-3 gap-6">
+                <div className="grid grid-cols-3 gap-4">
                     <div>
-                        <label className="block text-gray-600 font-semibold mb-2">Presión Sistólica (mmHg):</label>
+                        <label className="block text-gray-700 font-medium mb-1">Presión Sistólica (mmHg):</label>
                         <input
                             type="number"
                             value={presionSistolica}
-                            onChange={(e) => {
-                                setPresionSistolica(e.target.value);
-                            }}
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
+                            onChange={(e) => setPresionSistolica(e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
                         />
                     </div>
                     <div>
-                        <label className="block text-gray-600 font-semibold mb-2">Presión Diastólica (mmHg):</label>
+                        <label className="block text-gray-700 font-medium mb-1">Presión Diastólica (mmHg):</label>
                         <input
                             type="number"
                             value={presionDiastolica}
-                            onChange={(e) => {
-                                setPresionDiastolica(e.target.value);
-
-                            }}
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
+                            onChange={(e) => setPresionDiastolica(e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
                         />
                     </div>
                     <div>
-                        <label className="block text-gray-600 font-semibold mb-2">Presión Media (mmHg):</label>
+                        <label className="block text-gray-700 font-medium mb-1">Presión Media (mmHg):</label>
                         <input
                             type="number"
                             value={presionMedia}
                             readOnly
-                            className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100"
+                            className="w-full p-2 border border-gray-300 rounded-lg bg-gray-100"
                         />
                     </div>
                 </div>
 
-                {/* Pulso, frecuencia y saturación */}
-                <div className="grid grid-cols-3 gap-6">
+                <div className="grid grid-cols-3 gap-4">
                     <div>
-                        <label className="block text-gray-600 font-semibold mb-2">Pulso (lat/min):</label>
+                        <label className="block text-gray-700 font-medium mb-1">Pulso (lat/min):</label>
                         <input
                             type="number"
                             value={pulso}
                             onChange={(e) => setPulso(e.target.value)}
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
+                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
                         />
                     </div>
                     <div>
-                        <label className="block text-gray-600 font-semibold mb-2">Frecuencia Respiratoria (resp/min):</label>
+                        <label className="block text-gray-700 font-medium mb-1">Frecuencia Respiratoria (resp/min):</label>
                         <input
                             type="number"
                             value={frecuenciaRespiratoria}
                             onChange={(e) => setFrecuenciaRespiratoria(e.target.value)}
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
+                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
                         />
                     </div>
                     <div>
-                        <label className="block text-gray-600 font-semibold mb-2">SatO2 (%):</label>
+                        <label className="block text-gray-700 font-medium mb-1">SatO2 (%):</label>
                         <input
                             type="number"
                             value={saturacionOxigeno}
                             onChange={(e) => setSaturacionOxigeno(e.target.value)}
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
+                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
                         />
                     </div>
                 </div>
 
-                {/* Observaciones */}
                 <div>
-                    <label className="block text-gray-600 font-semibold mb-2">Observaciones:</label>
+                    <label className="block text-gray-700 font-medium mb-1">Observaciones:</label>
                     <textarea
                         value={observaciones}
                         onChange={(e) => setObservations(e.target.value)}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
+                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
                     ></textarea>
                 </div>
 
-                {/* Botones */}
-                <div className="flex justify-center gap-4 mt-1">
+                <div className="flex justify-center gap-4 mt-2">
                     <button
                         type="submit"
-                        className="flex items-center px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition"
+                        className="flex items-center px-6 py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-green-600 shadow-md transition"
                     >
                         <FiSave className="mr-2" />
                         Guardar Datos
@@ -260,7 +238,7 @@ const PatientDataForm = () => {
                     <button
                         type="button"
                         onClick={() => navigate(-1)}
-                        className="flex items-center px-6 py-3 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400 transition"
+                        className="flex items-center px-6 py-2 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400 shadow-md transition"
                     >
                         <FiClipboard className="mr-2" />
                         Ver registros anteriores
@@ -268,7 +246,6 @@ const PatientDataForm = () => {
                 </div>
             </form>
         </div>
-
     );
 };
 

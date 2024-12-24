@@ -136,7 +136,7 @@ const DatosCard = ({ datos, titulo, colorClass, emoji, soloMostrarNuevo = false 
   }
 
   // Lista de campos a excluir en datos nuevos
-  const camposExcluidosEnNuevos = ["id_paciente", "id", "paciente", "created_at"];
+  const camposExcluidosEnNuevos = ["id_paciente", "id", "paciente"];
   const camposExcluidosGlobal = ["id_paciente", "id", "paciente"];
 
   // Verificar si hay peso pediátrico o adulto
@@ -171,21 +171,21 @@ const DatosCard = ({ datos, titulo, colorClass, emoji, soloMostrarNuevo = false 
             <strong>{friendlyFieldNames[key] || key}:</strong>{" "}
             {typeof value === "object" && value !== null ? (
               soloMostrarNuevo ? (
-                formatValue(value.nuevo) || "No disponible"
+                formatValue(value.nuevo) || "Sin información"
               ) : (
                 <div className="ml-4">
                   <p>
                     <span className="font-semibold text-gray-600">Anterior:</span>{" "}
-                    {formatValue(value.anterior) || "No disponible"}
+                    {formatValue(value.anterior) || "Sin información"}
                   </p>
                   <p>
                     <span className="font-semibold text-gray-600">Nuevo:</span>{" "}
-                    {formatValue(value.nuevo) || "No disponible"}
+                    {formatValue(value.nuevo) || "Sin información"}
                   </p>
                 </div>
               )
             ) : (
-              formatValue(value) || "No disponible"
+              formatValue(value) || "Sin información"
             )}
           </li>
         ))}

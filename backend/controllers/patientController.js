@@ -109,9 +109,9 @@ exports.registerPatient = async (req, res) => {
                 segundo_nombre,
                 primer_apellido,
                 segundo_apellido,
+                tipo_identificacion,
                 numero_identificacion,
                 fecha_nacimiento: formatFecha(fecha_nacimiento), // Formato DD/MM/YYYY
-                tipo_identificacion,
                 ubicacion,
                 status: status || 'activo',
                 created_at: finalCreatedAt, // Asegúrate de pasar la fecha final aquí también
@@ -417,12 +417,12 @@ exports.logDownloadAction = async (req, res) => {
             segundo_nombre: paciente.segundo_nombre,
             primer_apellido: paciente.primer_apellido,
             segundo_apellido: paciente.segundo_apellido,
-            numero_identificacion: paciente.numero_identificacion,
             tipo_identificacion: paciente.tipo_identificacion,
+            numero_identificacion: paciente.numero_identificacion,
+            fecha_nacimiento: formatFechaSinHora(paciente.fecha_nacimiento), // Sin hora
             ubicacion: paciente.ubicacion,
             status: paciente.status,
             created_at: formatFechaSinHora(paciente.created_at), // Aquí enviamos solo la fecha
-            fecha_nacimiento: formatFechaSinHora(paciente.fecha_nacimiento), // Sin hora
             age_group: paciente.age_group,
             responsable_username: paciente.responsable_username,
         };

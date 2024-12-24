@@ -351,10 +351,10 @@ const SearchPatient = () => {
             <div className="mt-8 flex justify-center w-full max-w-4xl space-x-6">
                 <button
                     onClick={handleGoBack}
-                    className="flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all"
+                    className="flex items-center px-6 py-3 bg-gray-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all"
                 >
                     <FiHome className="mr-3" />
-                    Regresar
+                    Menú principal
                 </button>
                 <button
                     onClick={handleRegisterData}

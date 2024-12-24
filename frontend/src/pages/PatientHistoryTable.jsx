@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { fetchPatientHistory, fetchPatientInfo, fetchPatientHistoryRecords } from "../services/patientService";
 import { useParams, useNavigate } from "react-router-dom";
-import { FiPlusCircle, FiHome, FiX, FiDownload, FiEdit } from "react-icons/fi";
+import { FiPlusCircle, FiHome, FiX, FiDownload } from "react-icons/fi";
+import { FaTimes, FaFilter } from "react-icons/fa"
+
 import "jspdf-autotable";
 import { generatePatientPDF } from "../services/generatePatientPDF";
 import { toast } from 'react-toastify';  // Importar toast
@@ -161,7 +163,7 @@ const PatientHistoryPage = ({ token }) => {
         try {
             // Verificar si hay registros de signos vitales seleccionados
             const selectedRecords = filteredPatientHistory.filter(record => selectedIds.has(record.id_registro));
-            
+
             // Si no hay registros seleccionados
             if (selectedRecords.length === 0) {
                 const result = await Swal.fire({
@@ -174,13 +176,13 @@ const PatientHistoryPage = ({ token }) => {
                     confirmButtonText: "Sí, exportar",
                     cancelButtonText: "Cancelar",
                 });
-    
+
                 // Si el usuario cancela, no hacer nada
                 if (!result.isConfirmed) {
                     return;
                 }
             }
-    
+
             // Generar el PDF si hay registros seleccionados o el usuario confirmó la exportación
             generatePatientPDF(patientInfo, selectedRecords, filteredHistory, filteredPatientHistory, selectedIds);
             toast.success("PDF generado correctamente");
@@ -188,35 +190,44 @@ const PatientHistoryPage = ({ token }) => {
             toast.error("No se pudo generar el PDF");
         }
     };
-    
+
     const isPediatric = patientInfo && patientInfo.age_group !== "Adulto";
 
     if (loading) return <div>Loading...</div>;
     if (error) return <div className="text-red-500">{error}</div>;
 
     return (
-        <div className="flex flex-col items-center min-h-screen bg-gray-100 p-12 overflow-auto">
-            <h1 className="text-3xl font-bold mb-8">Trazabilidad del paciente </h1>
-            <div id="pdf-content">
-
+        <div className="flex flex-col items-center min-h-screen bg-white-100 p-16 overflow-auto">
+            <h1 className="text-4xl font-bold mb-8 text-blue-600">Trazabilidad del paciente</h1>
+            <div id="pdf-content" className="w-full flex flex-col items-center">
+                {/* Filtros alineados horizontalmente */}
                 <div className="flex items-center space-x-4 mb-4">
-                    <input
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        className="p-2 border rounded"
-                    />
-                    <input
-                        type="date"
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        className="p-2 border rounded"
-                    />
+                    <div className="flex items-center space-x-2">
+                        <label className="text-sm font-medium" htmlFor="startDate">Fecha de inicio:</label>
+                        <input
+                            type="date"
+                            id="startDate"
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                            className="p-2 border rounded w-40"
+                        />
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <label className="text-sm font-medium" htmlFor="endDate">Fecha de fin:</label>
+                        <input
+                            type="date"
+                            id="endDate"
+                            value={endDate}
+                            onChange={(e) => setEndDate(e.target.value)}
+                            className="p-2 border rounded w-40"
+                        />
+                    </div>
                     <button
                         onClick={handleFilterHistory}
-                        className="px-4 py-2 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600 transition"
+                        className="px-4 py-2 bg-blue-500 text-white font-semibold rounded flex items-center space-x-2 hover:bg-blue-600 transition"
                     >
-                        Filtrar por Fecha
+                        <FaFilter className="text-sm" />
+                        <span>Filtrar</span>
                     </button>
                     <button
                         onClick={() => {
@@ -224,15 +235,19 @@ const PatientHistoryPage = ({ token }) => {
                             setEndDate("");
                             setFilteredHistory(history); // Restaura el historial completo
                         }}
-                        className="px-4 py-2 bg-gray-300 text-gray-700 font-semibold rounded hover:bg-gray-400 transition"
+                        className="px-4 py-2 bg-gray-300 text-gray-700 font-semibold rounded flex items-center space-x-2 hover:bg-gray-400 transition"
                     >
-                        Limpiar Filtros
+                        <FaTimes className="text-sm" />
+                        <span>Limpiar Filtros</span>
                     </button>
                 </div>
 
                 {/* Historial del Paciente */}
                 <div className="bg-white p-6 rounded shadow-lg w-full max-w-7xl mb-6 overflow-x-auto">
-                    <h2 className="text-lg font-bold mb-4">Historial de cambios del paciente</h2>
+                    <h2 className="text-2xl font-bold mb-4 text-center text-gray-700 border-b-2 border-gray-300 pb-2">
+                        Historial de cambios del paciente
+                    </h2>
+
                     {filteredHistory.length > 0 ? (
 
                         <table className="w-full border-collapse table-auto text-sm">
@@ -257,7 +272,7 @@ const PatientHistoryPage = ({ token }) => {
                             <tbody>
 
                                 {filteredHistory.map((record, index) => {
-                                    const { date, time } = formatDateTime(record.created_at); 
+                                    const { date, time } = formatDateTime(record.created_at);
                                     const nextRecord = history[index + 1] || {};
                                     return (
                                         <tr key={index} className={`text-center ${index % 2 === 0 ? "bg-gray-50" : "bg-white"}`}>
@@ -297,7 +312,9 @@ const PatientHistoryPage = ({ token }) => {
                 </div>
                 {/* Signos Vitales */}
                 <div className="bg-white p-6 rounded shadow-lg w-full max-w-7xl mb-6 overflow-x-auto">
-                    <h2 className="text-lg font-bold mb-4">Historial de cambios de los Signos Vitales</h2>
+                    <h2 className="text-2xl font-bold mb-4 text-center text-gray-700 border-b-2 border-gray-300 pb-2">
+                        Historial de cambios de los Signos Vitales
+                    </h2>
                     {filteredPatientHistory.length > 0 ? (
 
                         <table className="w-full border-collapse table-auto text-sm">
@@ -328,7 +345,7 @@ const PatientHistoryPage = ({ token }) => {
 
                                 {filteredPatientHistory.map((currentRecord, index) => {
                                     const prevRecord = index > 0 ? filteredPatientHistory[index - 1] : null;
-                                    
+
                                     return (
 
                                         <tr key={currentRecord.id_registro} className="text-center">
@@ -373,7 +390,7 @@ const PatientHistoryPage = ({ token }) => {
                 <div className="flex justify-center w-full max-w-7xl mt-6 space-x-4">
                     <button
                         onClick={handleGoBack}
-                        className="flex items-center px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition"
+                        className="flex items-center px-6 py-3 bg-gray-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition"
                     >
                         <FiHome className="mr-2" /> Regresar
                     </button>
@@ -388,19 +405,19 @@ const PatientHistoryPage = ({ token }) => {
                             const allIds = new Set(filteredPatientHistory.map(record => record.id_registro));
                             setSelectedIds(allIds); // Selecciona todos los registros visibles
                         }}
-                        className="flex items-center px-6 py-3 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600 transition"
+                        className="flex items-center px-6 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition"
                     >
                         <FiPlusCircle className="mr-2" /> Seleccionar Todo
                     </button>
                     <button
                         onClick={exportPDF}
-                        className="flex items-center px-6 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition"
+                        className="flex items-center px-6 py-3 bg-gray-500 text-white font-semibold rounded-lg hover:bg-green-600 transition"
                     >
                         <FiDownload className="mr-2" /> Exportar PDF
                     </button>
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 };
 

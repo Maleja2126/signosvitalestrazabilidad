@@ -44,7 +44,7 @@ const Dashboard = () => {
 
             {/* Título de bienvenida con gradiente */}
             <motion.h2
-                className="text-3xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-500 to-green-400 mb-4"
+                className="text-3xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-blue-600 to-blue-600 mb-4"
                 initial={{ opacity: 0, x: -100 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 1 }}

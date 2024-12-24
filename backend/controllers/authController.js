@@ -70,7 +70,7 @@ exports.register = async (req, res) => {
                 to: email,
                 subject: "Bienvenido al sistema de gestion de pacientes",
                 html: `<p>Hola ${username},</p>
-                       <p>¡Bienvenido! Su cuenta se ha creado correctamente con el rol de ${role}.</p>
+                       <p>¡Bienvenido/a! Tu cuenta se ha creado correctamente con el rol de ${role} de enfermería.</p>
                        <p>Gracias por registrarte con nosotros.</p>`
             });
 
@@ -155,7 +155,7 @@ exports.resetPassword = async (req, res) => {
             from: process.env.EMAIL_USER,
             to: email,
             subject: "Solicitud de restablecimiento de contraseña",
-            html: `<p>Click <a href="${resetLink}">here</a> para restablecer su contraseña. El enlace es válido por 1 hora.</p>`
+            html: `<p>Click <a href="${resetLink}">aquí</a> para restablecer tu contraseña. El enlace es válido por 1 hora.</p>`
         });
 
         res.status(200).json({ message: "Correo electrónico de restablecimiento de contraseña enviado" });

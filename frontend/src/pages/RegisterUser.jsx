@@ -272,7 +272,7 @@ const RegisterUser = () => {
                         onClick={handleGoBack}
                         className="flex items-center px-6 py-3 bg-blue-600 text-white font-bold rounded-md hover:bg-blue-700 transition duration-300 shadow-md"
                     >
-                        <FiHome size={20} className="mr-2" /> Regresar
+                        <FiHome size={20} className="mr-2" /> Regresar al Panel
                     </button>
                     <button
                         type="submit"

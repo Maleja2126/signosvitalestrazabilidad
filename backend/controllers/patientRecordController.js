@@ -286,7 +286,7 @@ exports.updatePatientRecord = async (req, res) => {
 
         // Agregar información del paciente a los datos nuevos
         cambios["paciente"] = {
-            nombre_completo: `${pacienteInfo.primer_nombre} ${pacienteInfo.primer_apellido}`,
+            nombre_completo: `${pacienteInfo.primer_nombre} ${pacienteInfo.segundo_nombre} ${pacienteInfo.primer_apellido} ${pacienteInfo.segundo_apellido}`,
             tipo_identificacion: pacienteInfo.tipo_identificacion,
             numero_identificacion: pacienteInfo.numero_identificacion,
         };
