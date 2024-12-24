@@ -118,12 +118,12 @@
   }
   
   .modal-btn.yes {
-    background-color: #da0824; /* Cambia el fondo del botón "Sí" a verde. */
+    background-color: #08da4e; /* Cambia el fondo del botón "Sí" a verde. */
     color: white; /* Cambia el color del texto del botón "Sí" a blanco. */
   }
   
   .modal-btn.no {
-    background-color: #2ca43e; /* Cambia el fondo del botón "No" a rojo. */
+    background-color: #e04343; /* Cambia el fondo del botón "No" a rojo. */
     color: white; /* Cambia el color del texto del botón "No" a blanco. */
   }
   
