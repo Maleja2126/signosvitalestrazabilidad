@@ -250,9 +250,9 @@ const PatientHistoryPage = ({ token }) => {
 
                     {filteredHistory.length > 0 ? (
 
-                        <table className="w-full border-collapse table-auto text-sm">
+                        <table className="w-full border-collapse table-auto text-sm text-center">
                             <thead>
-                                <tr className="bg-blue-100 text-left">
+                                <tr className="bg-blue-100">
                                     <th className="p-3 border-b-2">Fecha de Registro</th>
                                     <th className="p-3 border-b-2">Hora de Registro</th>
                                     <th className="p-3 border-b-2">Primer Nombre</th>
@@ -319,7 +319,7 @@ const PatientHistoryPage = ({ token }) => {
 
                         <table className="w-full border-collapse table-auto text-sm">
                             <thead>
-                                <tr className="bg-blue-100 text-left">
+                                <tr className="bg-blue-100">
                                     <th className="p-3 border-b-2">Seleccionar</th>
                                     <th className="p-3 border-b-2">Id del registro</th>
                                     <th className="p-3 border-b-2">Fecha</th>
