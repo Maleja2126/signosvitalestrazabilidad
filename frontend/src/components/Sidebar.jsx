@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiMenu, FiX, FiHome, FiUsers, FiUserPlus, FiSearch, FiUser } from 'react-icons/fi';
+import { FiHome, FiUsers, FiUserPlus, FiSearch, FiUser } from 'react-icons/fi';
 import { getUserInfo } from '../services/authService';
 
 const Sidebar = () => {

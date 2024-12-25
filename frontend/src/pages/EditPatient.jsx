@@ -326,7 +326,7 @@ const EditPatient = () => {
                         <button
                             type="button"
                             onClick={handleGoBack}
-                            className="flex items-center px-4 py-2.5 bg-gray-500 text-white font-bold rounded-lg shadow-md hover:bg-blue-600 transition"
+                            className="flex items-center px-4 py-2.5 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-800 transition"
                         >
                             <FiHome size={18} className="mr-2" /> Regresar
                         </button>

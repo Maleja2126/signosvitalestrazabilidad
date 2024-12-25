@@ -294,7 +294,7 @@ const TrazabilidadPage = () => {
                 <span>Quitar Selecciones</span>
               </button>
               <button
-                className="bg-gray-500 text-white px-6 py-2 rounded hover:bg-green-600 transition flex items-center space-x-2"
+                className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 transition flex items-center space-x-2"
                 onClick={() => handleExportarPDF(false)}
               >
                 <FaCheck /> {/* Icono de cheque */}
