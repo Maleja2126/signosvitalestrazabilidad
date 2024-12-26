@@ -32,6 +32,8 @@ const PatientRecordHistory = () => {
     const [username, setUsername] = useState(''); // Estado para el nombre de usuario
     const [showNormalValues, setShowNormalValues] = useState(false);
     const [showColorSemantics, setShowColorSemantics] = useState(false);
+    const [noRecordsMessage, setNoRecordsMessage] = useState(""); // Mensaje para indicar si no hay registros
+    const [exportTxt, setExportTxt] = useState(false); // Estado para incluir TXT
 
     useEffect(() => {
         const fetchUserInfo = async () => {
@@ -175,6 +177,13 @@ const PatientRecordHistory = () => {
             return { ...record, ...filteredRecord };
         });
 
+        // Actualizar mensaje si no hay registros filtrados
+        if (filtered.length === 0) {
+            setNoRecordsMessage("No hay registros en el rango de fechas seleccionado.");
+        } else {
+            setNoRecordsMessage(""); // Restablecer el mensaje si hay registros
+        }
+
         // Actualizar el estado de los registros filtrados
         setFilteredRecords(filteredWithVariables);
     };
@@ -299,7 +308,8 @@ const PatientRecordHistory = () => {
             return;
         }
         try {
-            await generatePDF(patientInfo, edad, ageUnit, ageGroup, filteredRecords, chartRef.current, chartRef, role);
+            // Llama a generatePDF con el estado exportTxt
+            await generatePDF(patientInfo, edad, ageUnit, ageGroup, filteredRecords, vitalSignRanges, chartRef, exportTxt);
         } catch (error) {
             console.error("Error al generar el PDF", error);
         }
@@ -329,7 +339,7 @@ const PatientRecordHistory = () => {
         if (!text) return "";
         // Lista de palabras que deben permanecer en minúscula
         const lowercaseWords = ["de"];
-        
+
         return text
             .split(" ") // Divide el texto en palabras
             .map((word, index) => {
@@ -342,7 +352,7 @@ const PatientRecordHistory = () => {
             })
             .join(" "); // Une las palabras nuevamente
     };
-    
+
     return (
         <div className="flex flex-col items-center min-h-screen bg-white-50 p-14 pl-70 overflow-auto">
             {/* Título principal */}
@@ -503,7 +513,7 @@ const PatientRecordHistory = () => {
                             </p>
                         </div>
 
-                        {/* Generar dinámicamente las tarjetas */}
+                        {/* Generar  las tarjetas */}
                         <div className="grid grid-cols-2 gap-4 max-w-2xl mx-auto">
                             {Object.keys(vitalSignRanges).map((vitalSignKey, index, array) => {
                                 const range = vitalSignRanges[vitalSignKey][ageGroup];
@@ -552,7 +562,7 @@ const PatientRecordHistory = () => {
                             })}
                         </div>
                         <p className="text-center text-xs mt-8 text-gray-500">
-                            Estos valores son aproximados y pueden variar según el contexto médico.
+                            Estos valores te ayudarán a monitorear y entender mejor la salud del paciente.
                         </p>
                     </div>
                 )}
@@ -621,152 +631,170 @@ const PatientRecordHistory = () => {
 
                 {/* Tabla */}
                 <div className="bg-white p-0 rounded-lg shadow-md w-full max-w-7xl overflow-x-auto">
-                    <table className="table-auto w-full border-collapse rounded-lg overflow-hidden shadow">
-                        <thead>
-                            <tr className="bg-blue-400 text-white text-sm uppercase font-semibold tracking-wide">
-                                <th className="p-1">Id</th>
-                                <th className="p-1">Fecha</th>
-                                <th className="p-1">Hora</th>
-                                <th className="p-1">Pulso (lpm)</th>
-                                <th className="p-2">T°C</th>
-                                <th className="p-1">FR (RPM)</th>
-                                <th className="p-1">TAS (mmHg)</th>
-                                <th className="p-1">TAD (mmHg)</th>
-                                <th className="p-1">TAM (mmHg)</th>
-                                <th className="p-1">SatO2 (%)</th>
-                                {/* Encabezado dinámico para el peso */}
-                                <th className="p-3">
-                                    {['Recién nacido', 'Lactante temprano', 'Lactante mayor', 'Niño pequeño', 'Preescolar temprano', 'Preescolar tardío'].includes(ageGroup)
-                                        ? "Peso Pediátrico (kg)"
-                                        : "Peso Adulto (kg)"}
-                                </th>
-                                <th className="p-1">Talla (cm)</th>
-                                <th className="p-3 max-w-xs">Observaciones</th>
-                                {role === "jefe" && <th className="p-1">Registrado por</th>}
-                                <th className="p-1">Editar</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredRecords.map((record, index) => {
-                                const recordDate = new Date(record.record_date);
-                                const currentDate = new Date();
-                                const isEditable = (currentDate - recordDate) / (1000 * 60 * 60 * 24) <= 1;
-                                const handleForceEdit = async (id) => {
-                                    const result = await Swal.fire({
-                                        title: "¿Forzar edición?",
-                                        text: "Este registro no es editable porque tiene más de 1 día. ¿Quieres continuar?",
-                                        icon: "warning",
-                                        showCancelButton: true,
-                                        confirmButtonColor: "#d33",
-                                        cancelButtonColor: "#3085d6",
-                                        confirmButtonText: "Sí, editar",
-                                        cancelButtonText: "Cancelar",
-                                    });
+                    {noRecordsMessage ? (
+                        <div className="text-center py-6 font-semibold text-lg text-red-500">
+                            {noRecordsMessage}
+                        </div>
+                    ) : (
+                        <table className="table-auto w-full border-collapse rounded-lg overflow-hidden shadow">
+                            <thead>
+                                <tr className="bg-blue-400 text-white text-sm uppercase font-semibold tracking-wide">
+                                    <th className="p-1">Id</th>
+                                    <th className="p-1">Fecha</th>
+                                    <th className="p-1">Hora</th>
+                                    <th className="p-1">Pulso (lpm)</th>
+                                    <th className="p-2">T°C</th>
+                                    <th className="p-1">FR (RPM)</th>
+                                    <th className="p-1">TAS (mmHg)</th>
+                                    <th className="p-1">TAD (mmHg)</th>
+                                    <th className="p-1">TAM (mmHg)</th>
+                                    <th className="p-1">SatO2 (%)</th>
+                                    {/* Encabezado dinámico para el peso */}
+                                    <th className="p-3">
+                                        {['Recién nacido', 'Lactante temprano', 'Lactante mayor', 'Niño pequeño', 'Preescolar temprano', 'Preescolar tardío'].includes(ageGroup)
+                                            ? "Peso Pediátrico (kg)"
+                                            : "Peso Adulto (kg)"}
+                                    </th>
+                                    <th className="p-1">Talla (cm)</th>
+                                    <th className="p-3 max-w-xs">Observaciones</th>
+                                    {role === "jefe" && <th className="p-1">Registrado por</th>}
+                                    <th className="p-1">Editar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredRecords.map((record, index) => {
+                                    const recordDate = new Date(record.record_date);
+                                    const currentDate = new Date();
+                                    const isEditable = (currentDate - recordDate) / (1000 * 60 * 60 * 24) <= 1;
+                                    const handleForceEdit = async (id) => {
+                                        const result = await Swal.fire({
+                                            title: "¿Forzar edición?",
+                                            text: "Este registro no es editable porque tiene más de 1 día. ¿Quieres continuar?",
+                                            icon: "warning",
+                                            showCancelButton: true,
+                                            confirmButtonColor: "#d33",
+                                            cancelButtonColor: "#3085d6",
+                                            confirmButtonText: "Sí, editar",
+                                            cancelButtonText: "Cancelar",
+                                        });
 
-                                    if (result.isConfirmed) {
-                                        handleEditRecord(id);
-                                    }
-                                };
+                                        if (result.isConfirmed) {
+                                            handleEditRecord(id);
+                                        }
+                                    };
 
-                                return (
-                                    <tr
-                                        key={index}
-                                        className={`text-center ${index % 2 === 0 ? "bg-white" : "bg-white-100"}`}
-                                    >
-                                        <td className="p-3 border text-center">{record.id}</td>
-                                        <td className="p-3 border text-center">{format(new Date(record.record_date), "dd/MM/yyyy")}</td>
-                                        <td className="p-3 border text-center">{record.record_time}</td>
-                                        <td className={`p-3 border text-center ${getVitalSignBackground(ageGroup, 'pulso', record.pulso)}`}>
-                                            {record.pulso}
-                                        </td>
-                                        <td className={`p-3 border text-center ${getVitalSignBackground(ageGroup, 'temperatura', record.temperatura)}`}>
-                                            {record.temperatura}
-                                        </td>
-                                        <td className={`p-3 border text-center ${getVitalSignBackground(ageGroup, 'frecuencia_respiratoria', record.frecuencia_respiratoria)}`}>
-                                            {record.frecuencia_respiratoria}
-                                        </td>
-                                        <td className={`p-3 border text-center ${getVitalSignBackground(ageGroup, 'presion_sistolica', record.presion_sistolica)}`}>
-                                            {record.presion_sistolica}
-                                        </td>
-                                        <td className={`p-3 border text-center ${getVitalSignBackground(ageGroup, 'presion_diastolica', record.presion_diastolica)}`}>
-                                            {record.presion_diastolica}
-                                        </td>
-                                        <td className={`p-3 border text-center ${getVitalSignBackground(ageGroup, 'presion_media', record.presion_media)}`}>
-                                            {record.presion_media}
-                                        </td>
-                                        <td className={`p-3 border text-center ${getVitalSignBackground(ageGroup, 'saturacion_oxigeno', record.saturacion_oxigeno)}`}>
-                                            {record.saturacion_oxigeno}
-                                        </td>
-                                        <td className="p-3 border text-center">
-                                            {['Recién nacido', 'Lactante temprano', 'Lactante mayor', 'Niño pequeño', 'Preescolar temprano', 'Preescolar tardío'].includes(ageGroup)
-                                                ? record.peso_pediatrico
-                                                : record.peso_adulto}
-                                        </td>
-                                        <td className="p-3 border text-center">{record.talla || "-"}</td>
-                                        <td className="p-3 border text-center">
-                                            {record.observaciones || "-"}
-                                        </td>
-                                        {role === "jefe" && (
-                                            <td className="p-3 border text-center">{record.responsable_signos || "No disponible"}</td>)}
+                                    return (
+                                        <tr
+                                            key={index}
+                                            className={`text-center ${index % 2 === 0 ? "bg-white" : "bg-white-100"}`}
+                                        >
+                                            <td className="p-3 border text-center">{record.id}</td>
+                                            <td className="p-3 border text-center">{format(new Date(record.record_date), "dd/MM/yyyy")}</td>
+                                            <td className="p-3 border text-center">{record.record_time}</td>
+                                            <td className={`p-3 border text-center ${getVitalSignBackground(ageGroup, 'pulso', record.pulso)}`}>
+                                                {record.pulso}
+                                            </td>
+                                            <td className={`p-3 border text-center ${getVitalSignBackground(ageGroup, 'temperatura', record.temperatura)}`}>
+                                                {record.temperatura}
+                                            </td>
+                                            <td className={`p-3 border text-center ${getVitalSignBackground(ageGroup, 'frecuencia_respiratoria', record.frecuencia_respiratoria)}`}>
+                                                {record.frecuencia_respiratoria}
+                                            </td>
+                                            <td className={`p-3 border text-center ${getVitalSignBackground(ageGroup, 'presion_sistolica', record.presion_sistolica)}`}>
+                                                {record.presion_sistolica}
+                                            </td>
+                                            <td className={`p-3 border text-center ${getVitalSignBackground(ageGroup, 'presion_diastolica', record.presion_diastolica)}`}>
+                                                {record.presion_diastolica}
+                                            </td>
+                                            <td className={`p-3 border text-center ${getVitalSignBackground(ageGroup, 'presion_media', record.presion_media)}`}>
+                                                {record.presion_media}
+                                            </td>
+                                            <td className={`p-3 border text-center ${getVitalSignBackground(ageGroup, 'saturacion_oxigeno', record.saturacion_oxigeno)}`}>
+                                                {record.saturacion_oxigeno}
+                                            </td>
+                                            <td className="p-3 border text-center">
+                                                {['Recién nacido', 'Lactante temprano', 'Lactante mayor', 'Niño pequeño', 'Preescolar temprano', 'Preescolar tardío'].includes(ageGroup)
+                                                    ? record.peso_pediatrico
+                                                    : record.peso_adulto}
+                                            </td>
+                                            <td className="p-3 border text-center">{record.talla || "-"}</td>
+                                            <td className="p-3 border text-center">
+                                                {record.observaciones || "-"}
+                                            </td>
+                                            {role === "jefe" && (
+                                                <td className="p-3 border text-center">{record.responsable_signos || "No disponible"}</td>)}
 
-                                        {/* Botón de editar */}
-                                        <td className="p-3 border text-center">
-                                            {isEditable ? (
-                                                <button
-                                                    onClick={() => handleEditRecord(record.id)}
-                                                    className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-green-600 transition"
-                                                >
-                                                    <FiEdit className="mr-2" /> Editar
-                                                </button>
-                                            ) : (
-                                                <button
-                                                    onClick={() => handleForceEdit(record.id)}
-                                                    className="flex items-center px-4 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition"
-                                                >
-                                                    <FiEdit className="mr-2" /> Forzar
-                                                </button>
-                                            )}
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
+                                            {/* Botón de editar */}
+                                            <td className="p-3 border text-center">
+                                                {isEditable ? (
+                                                    <button
+                                                        onClick={() => handleEditRecord(record.id)}
+                                                        className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-green-600 transition"
+                                                    >
+                                                        <FiEdit className="mr-2" /> Editar
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => handleForceEdit(record.id)}
+                                                        className="flex items-center px-4 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition"
+                                                    >
+                                                        <FiEdit className="mr-2" /> Forzar
+                                                    </button>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    )}
                 </div>
 
                 {/* Botones de acción */}
-                <div className="flex justify-evenly w-full mt-6 space-x-4">
+                <div className="flex items-center justify-center w-full space-x-6 mt-6">
                     <button
                         onClick={handleNewRecord}
-                        className="flex items-center justify-center px-6 py-3 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 transition"
+                        className="flex items-center justify-center px-6 py-2 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 transition text-sm w-45 h-12"
                     >
                         <FiPlusCircle className="mr-2" /> Agregar Registro
                     </button>
 
                     <button
                         onClick={handleExportPDF}
-                        className="flex items-center justify-center px-6 py-3 bg-green-500 text-white font-bold rounded-lg hover:bg-green-600 transition"
+                        className="flex items-center justify-center px-6 py-2 bg-green-500 text-white font-bold rounded-lg hover:bg-green-600 transition text-sm w-35 h-12"
                     >
-                        <FiDownload className="mr-2" /> Exportar como PDF
+                        <FiDownload className="mr-2" /> Exportar PDF
                     </button>
+
+                    <label
+                        className="flex items-center justify-center px-6 py-2 bg-gray-100 text-gray-700 font-bold rounded-lg border hover:bg-gray-200 transition text-sm w-35 h-12"
+                    >
+                        <input
+                            type="checkbox"
+                            checked={exportTxt}
+                            onChange={(e) => setExportTxt(e.target.checked)}
+                            className="mr-2 accent-blue-500 w-4 h-4"
+                        />
+                        Incluir TXT
+                    </label>
 
                     {role === "jefe" && (
                         <button
                             onClick={handleRedirect}
-                            className="flex items-center justify-center px-6 py-3 bg-green-500 text-white font-bold rounded-lg hover:bg-green-600 transition"
+                            className="flex items-center justify-center px-6 py-2 bg-green-500 text-white font-bold rounded-lg hover:bg-green-600 transition text-sm w-52 h-12 whitespace-nowrap"
                         >
-                            <MdOutlinePublishedWithChanges className="mr-2" /> Ver Historial de Cambios
+                            <MdOutlinePublishedWithChanges className="mr-2" /> Historial de Cambios
                         </button>
                     )}
 
                     <button
                         onClick={handleGoBack}
-                        className="flex items-center justify-center px-6 py-3 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 transition"
+                        className="flex items-center justify-center px-6 py-2 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 transition text-sm w-35 h-12"
                     >
                         <FiHome className="mr-2" /> Regresar
                     </button>
                 </div>
-            </div >
+            </div>
 
             {/* Variables para graficar */}
             <div className="bg-gray-50 p-6 rounded-lg shadow-lg w-full max-w-7xl mt-6 mb-6">

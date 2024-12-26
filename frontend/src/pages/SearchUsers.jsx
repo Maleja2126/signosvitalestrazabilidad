@@ -151,7 +151,7 @@ const SearchUsers = () => {
                                         <button
                                             onClick={() => handleToggleStatus(user.id, user.is_active)}
                                             className={`flex items-center px-4 py-2 text-sm font-bold rounded-lg shadow ${user.is_active
-                                                    ? "bg-gray-500 text-white hover:bg-gray-700"
+                                                    ? "bg-gray-600 text-white hover:bg-gray-700"
                                                     : "bg-green-600 text-white hover:bg-green-700"
                                                 }`}
                                         >
@@ -167,7 +167,7 @@ const SearchUsers = () => {
                                         </button>
                                         <button
                                             onClick={() => handleDeleteUser(user.id)}
-                                            className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-bold shadow hover:bg-red-700 transition"
+                                            className="flex items-center px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-bold shadow hover:bg-red-700 transition"
                                         >
                                             <FiTrash2 className="mr-2" size={18} /> Eliminar
                                         </button>

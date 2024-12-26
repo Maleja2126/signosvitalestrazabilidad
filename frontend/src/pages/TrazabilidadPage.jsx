@@ -143,7 +143,7 @@ const TrazabilidadPage = () => {
   const getDotStyle = (action) => actionStyles[action]?.dot || "bg-gray-600";
 
   return (
-    <div className="trazabilidad-page bg-gray-100 min-h-screen flex flex-col items-center p-12">
+    <div className="trazabilidad-page bg-white-500 min-h-screen flex flex-col items-center p-12">
       <div className="w-full max-w-6xl">
         <div className="mb-6 text-center">
           <div className="flex flex-col items-center space-y-6">

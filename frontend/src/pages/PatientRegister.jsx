@@ -55,10 +55,6 @@ const PatientRegister = () => {
         return 'Adulto';
     };
 
-    const handleTipoIdentificacionChange = (e) => {
-        settipoIdentificacion(e.target.value); // Permite al usuario cambiar manualmente el valor
-    };
-
     const handleFechaNacimientoChange = (date) => {
         if (!date) {
             // Si el usuario borra toda la fecha, limpia los estados relacionados
@@ -91,11 +87,23 @@ const PatientRegister = () => {
             setEdad(age > 0 ? `${age} años` : null); // Asegura que no se muestren valores negativos
             const group = calculateAgeGroup(formattedDate); // Calcula el grupo de edad
             setAgeGroup(group || "No definido");
+
+            // Cambiar automáticamente el tipo de identificación
+            if (age < 18) {
+                settipoIdentificacion("Tarjeta de Identidad");
+            } else {
+                settipoIdentificacion("Cédula de Ciudadanía");
+            }
+
         } else {
             toast.error("Ingrese una fecha válida (YYYY-MM-DD).");
-            setEdad(null); // Limpia la edad
-            setAgeGroup(""); // Limpia el grupo de edad
+            setEdad(null);
+            setAgeGroup("");
         }
+    };
+
+    const handleTipoIdentificacionChange = (e) => {
+        settipoIdentificacion(e.target.value);
     };
 
     const validateNumeroID = (numeroIdentificacion) => {
