@@ -20,7 +20,17 @@ const generatePDF = async (patientInfo, edad, ageUnit, ageGroup, filteredRecords
         console.log("Descarga registrada exitosamente en trazabilidad.");
 
         // Crear un nuevo documento PDF
-        const doc = new jsPDF();
+        const doc = new jsPDF({ orientation: "landscape" });
+
+        // Configurar el contenido de la primera página
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(22);
+        doc.text(
+            'Historial Médico del Paciente',
+            doc.internal.pageSize.getWidth() / 2,
+            15,
+            { align: 'center' }
+        );
 
         // Función para formatear la fecha (solo día, mes, año)
         const formatDate = (dateString) => {
@@ -92,8 +102,8 @@ const generatePDF = async (patientInfo, edad, ageUnit, ageGroup, filteredRecords
 
         // Datos de la tabla
         const tableColumns = [
-            "Fecha", "Hora", "Pulso", "T °C", "FR",
-            "TAS", "TAD", "TAM", "SatO2 %", "Peso", "Talla", "Observaciones", "Responsable"
+            "Fecha", "Hora", "Pulso (LPM)", "T °C", "FR (RPM)",
+            "TAS (mmHg)", "TAD (mmHg)", "TAM (mmHg)", "SatO2 %", "Peso (kg)", "Talla (cm)", "Observaciones", "Responsable"
         ];
 
         // Definir los rangos específicos
@@ -227,29 +237,55 @@ const generatePDF = async (patientInfo, edad, ageUnit, ageGroup, filteredRecords
             ];
         });
 
-        // Agregar tabla al PDF
+        // Tabla en la primera página
         autoTable(doc, {
             head: [tableColumns],
             body: tableData,
             startY: 75,
-            theme: 'striped',
+            theme: 'plain',
+            styles: {
+                fontSize: 9,
+                cellPadding: 2,
+                halign: 'center',
+                lineWidth: 0.1,
+                lineColor: [0, 0, 0],
+            },
             headStyles: {
-                fillColor: [54, 162, 235],
-                textColor: 255,
-                fontSize: 9,   // Tamaño de la fuente de los encabezados
+                fillColor: [154, 208, 245],
+                textColor: [0, 0, 0],
+                fontStyle: 'bold',
+                halign: 'center',
+                fontSize: 8,
+                valign: 'middle',
             },
             bodyStyles: {
-                textColor: 50,
-                fontSize: 8,   // Tamaño de la fuente de las celdas
-                fillColor: [255, 255, 255]
+                halign: 'center',
+                textColor: [0, 0, 0],
             },
             alternateRowStyles: {
-                fillColor: [255, 255, 255]
+                fillColor: [245, 245, 245],
+            },
+            columnStyles: {
+                0: { cellWidth: 20, halign: 'center', valign: 'middle' }, // Columna 1 (Ajusta a 30 mm)
+                1: { cellWidth: 20, halign: 'center', valign: 'middle' }, // Columna 2
+                2: { cellWidth: 15, halign: 'center', valign: 'middle' }, // Columna 3
+                3: { cellWidth: 15, halign: 'center', valign: 'middle' }, // Columna 4
+                4: { cellWidth: 15, halign: 'center', valign: 'middle' }, // Columna 5
+                5: { cellWidth: 15, halign: 'center', valign: 'middle' }, // Columna 6
+                6: { cellWidth: 15, halign: 'center', valign: 'middle' }, // Columna 7
+                7: { cellWidth: 15, halign: 'center', valign: 'middle' }, // Columna 8
+                8: { cellWidth: 20, halign: 'center', valign: 'middle' }, // Columna 9
+                9: { cellWidth: 15, halign: 'center', valign: 'middle' }, // Columna 10
+                10: { cellWidth: 15, halign: 'center', valign: 'middle' }, // Columna 11
+                11: { cellWidth: 60, halign: 'center', valign: 'middle' }, // Columna 12
+                12: { cellWidth: 30, halign: 'center', valign: 'middle' }, // Columna 13
             },
         });
 
+        // Agregar una nueva página en orientación vertical
+        doc.addPage("p"); // "p" para orientación vertical
+
         // Espaciado entre la tabla y los gráficos
-        doc.addPage();
         doc.setFontSize(12);
         doc.text('Grafico de signos vitales:', 20, 20);
 
@@ -262,22 +298,26 @@ const generatePDF = async (patientInfo, edad, ageUnit, ageGroup, filteredRecords
         // Iterar sobre todos los gráficos y agregarlos al PDF
         const canvasElements = chartRef.current.querySelectorAll("canvas");
         canvasElements.forEach((canvas, index) => {
-            // Si los gráficos no caben en una página, agregamos una nueva página
-            if (graphicsOnCurrentPage === maxGraphicsPerPage) {
-                doc.addPage();
-                yPosition = 20; // Resetea la posición Y al inicio de la nueva página
-                graphicsOnCurrentPage = 0;
+            // Si no es la primera gráfica, agrega una nueva página
+            if (index > 0) {
+                doc.addPage(); // Agrega una nueva página para cada gráfica adicional
             }
 
             // Capturar el gráfico como imagen
             const imgData = canvas.toDataURL("image/png");
 
-            // Ajustar la altura y la posición para los gráficos
-            doc.addImage(imgData, "PNG", margin, yPosition, 180, 90);  // Ajusta el tamaño y la posición según sea necesario
+            // Ajustar las dimensiones de la gráfica
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const imgWidth = 250; // Ancho de la gráfica (ajustar según necesidad)
+            const imgHeight = 150; // Altura de la gráfica (ajustar según necesidad)
 
-            // Actualizar la posición Y para el siguiente gráfico
-            yPosition += 110;  // Espacio entre gráficos, puedes ajustar si es necesario
-            graphicsOnCurrentPage++;  // Incrementar el contador de gráficos por página
+            // Calcular las posiciones para centrar la gráfica
+            const xPosition = (pageWidth - imgWidth) / 2;
+            const yPosition = (pageHeight - imgHeight) / 2;
+
+            // Añadir la gráfica al PDF
+            doc.addImage(imgData, "PNG", xPosition, yPosition, imgWidth, imgHeight);
         });
 
         // Formatear el nombre del archivo con el nombre completo del paciente y su número de identificación
