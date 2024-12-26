@@ -22,7 +22,7 @@ const Dashboard = () => {
     }, []);
 
     return (
-        <div className="flex items-center justify-center w-screen h-screen bg-gradient-to-r from-blue-50 to-blue-100 overflow-hidden fixed">
+        <div className="flex items-center justify-center w-screen h-screen bg-gradient-to-r from-blue-50 to-white-100 overflow-hidden fixed">
             <div className="flex flex-col items-center justify-center text-center max-w-4xl w-full h-full p-6">
                 {/* Header */}
                 <motion.h1

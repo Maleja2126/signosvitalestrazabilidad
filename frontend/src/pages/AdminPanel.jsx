@@ -7,7 +7,7 @@ const AdminPanel = () => {
     const navigate = useNavigate();
 
     return (
-        <div className="flex flex-col items-center justify-center h-screen w-screen bg-gradient-to-r from-blue-50 to-blue-100 p-6 overflow-hidden fixed">
+        <div className="flex flex-col items-center justify-center h-screen w-screen bg-gradient-to-r from-blue-50 to-white-100 p-6 overflow-hidden fixed">
             {/* Título principal con animaciones */}
             <motion.h1
                 className="text-5xl font-bold mb-6 flex items-center gap-4 text-blue-600"
