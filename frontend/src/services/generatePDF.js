@@ -32,6 +32,12 @@ const generatePDF = async (patientInfo, edad, ageUnit, ageGroup, filteredRecords
             { align: 'center' }
         );
 
+        // Agregar una línea negra debajo del título
+        const pageWidth = doc.internal.pageSize.getWidth(); // Ancho de la página
+        doc.setDrawColor(0, 0, 0); // Color negro para la línea
+        doc.setLineWidth(0.7); // Grosor de la línea
+        doc.line(10, 20, pageWidth - 10, 20); // Coordenadas (x1, y1, x2, y2)
+
         // Función para formatear la fecha (solo día, mes, año)
         const formatDate = (dateString) => {
             const date = new Date(dateString);
@@ -94,11 +100,6 @@ const generatePDF = async (patientInfo, edad, ageUnit, ageGroup, filteredRecords
             doc.text("Inactivo", 37, 65);
         }
         doc.setTextColor(0, 0, 0); // Restablecer color
-
-        // Línea divisoria
-        doc.setLineWidth(0.7);
-        doc.setDrawColor(0, 153, 255); // Azul
-        doc.line(20, 70, 190, 70); // Ajuste en la posición Y de la línea
 
         // Datos de la tabla
         const tableColumns = [
@@ -288,12 +289,6 @@ const generatePDF = async (patientInfo, edad, ageUnit, ageGroup, filteredRecords
         // Espaciado entre la tabla y los gráficos
         doc.setFontSize(12);
         doc.text('Grafico de signos vitales:', 20, 20);
-
-        // Ajuste de gráficos con márgenes adecuados y espacios
-        let yPosition = 20;
-        const margin = 10;  // Márgenes
-        const maxGraphicsPerPage = 2;  // Número de gráficos por página
-        let graphicsOnCurrentPage = 0;
 
         // Iterar sobre todos los gráficos y agregarlos al PDF
         const canvasElements = chartRef.current.querySelectorAll("canvas");
