@@ -75,7 +75,7 @@ const Dashboard = () => {
                         <button
                             className="mt-4 px-6 py-3 bg-blue-600 text-white font-bold rounded-full shadow-lg hover:bg-blue-700 hover:scale-105 transition-all duration-300"
                         >
-                            Registrar Paciente
+                            Buscar Paciente
                         </button>
 
                         <p className="mt-6 text-gray-700 text-center">

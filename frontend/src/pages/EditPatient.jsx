@@ -175,7 +175,7 @@ const EditPatient = () => {
                 >
                     {/* Encabezado */}
                     <h2 className="text-3xl font-bold mb-8 text-center text-blue-600 flex items-center justify-center gap-2">
-                        <FaClipboard size={25} /> Editar paciente
+                         📝Editar paciente
                     </h2>
         
                     {/* Campos en Grid */}

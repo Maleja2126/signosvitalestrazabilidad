@@ -199,8 +199,8 @@ const PatientRegister = () => {
                 className="w-full max-w-lg p-8 bg-white rounded-lg shadow-lg my-8"
             >
                 {/* Encabezado */}
-                <h2 className="text-3xl font-bold mb-8 text-center text-blue-800 flex items-center justify-center gap-2">
-                    <FaClipboard size={25} /> Registrar paciente
+                <h2 className="text-3xl font-bold mb-8 text-center text-blue-600 flex items-center justify-center gap-2">
+                     📄Registrar paciente
                 </h2>
 
                 {/* Campos en Grid */}

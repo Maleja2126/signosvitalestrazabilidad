@@ -7,6 +7,7 @@ import { Html5QrcodeScanner } from "html5-qrcode";
 import { BiSolidSpreadsheet } from "react-icons/bi";
 import 'react-toastify/dist/ReactToastify.css';
 import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 const SearchPatient = () => {
     const [patients, setPatients] = useState([]);
@@ -56,9 +57,36 @@ const SearchPatient = () => {
 
     const handleStatusToggle = async (idPaciente, currentStatus) => {
         const newStatus = currentStatus === "activo" ? "inactivo" : "activo";
-        await updatePatientStatus(idPaciente, newStatus);
-        loadPatients();
-    };
+    
+        Swal.fire({
+            title: `¿Estás seguro de que deseas ${newStatus === "inactivo" ? "❌ inactivar" : "✅ activar"} este paciente?`,
+            text: "Puedes cambiar el estado más tarde si lo deseas.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Sí, cambiar estado",
+            cancelButtonText: "Cancelar",
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    await updatePatientStatus(idPaciente, newStatus);
+                    loadPatients();
+                    Swal.fire(
+                        "¡Estado cambiado!",
+                        `El paciente ahora está ${newStatus}.`,
+                        "success"
+                    );
+                } catch (error) {
+                    Swal.fire(
+                        "Error",
+                        "No se pudo cambiar el estado del paciente. Inténtalo nuevamente.",
+                        "error"
+                    );
+                }
+            }
+        });
+    }; 
 
     const filteredPatients = patients.filter(patient =>
         patient.numero_identificacion.includes(searchId)
@@ -197,7 +225,21 @@ const SearchPatient = () => {
         navigate("/dashboard");
     };
     const handleEdit = (idPaciente) => {
-        navigate(`/edit-patient/${idPaciente}`);
+        Swal.fire({
+            title: "¿Estas seguro de que deseas editar los datos del paciente?",
+            text: "Asegúrate de que esta acción sea intencional.",
+            icon: "question", // Icono de pregunta
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6", // Botón de confirmación azul
+            cancelButtonColor: "#d33",     // Botón de cancelar rojo
+            confirmButtonText: "Sí, editar",
+            cancelButtonText: "Cancelar",
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Navegar a la página de edición si el usuario confirma
+                navigate(`/edit-patient/${idPaciente}`);
+            }
+        });
     };
 
     return (
