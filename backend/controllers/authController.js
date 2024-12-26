@@ -50,8 +50,8 @@ exports.register = async (req, res) => {
             const existingEmail = await User.findByEmail(email);
             const existingNumeroIdentificacion = await User.findByNumeroIdentificacion(numero_identificacion);
 
-            if (existingUser) return res.status(400).json({ message: "Username already taken" });
-            if (existingEmail) return res.status(400).json({ message: "Email already in use" });
+            if (existingUser) return res.status(400).json({ message: "El nombre de usuario ya está en uso" });
+            if (existingEmail) return res.status(400).json({ message: "El correo electrónico ya está en uso" });
             if (existingNumeroIdentificacion) return res.status(400).json({ message: "Número de identificación ya está registrado" });
             
             // Crear el nuevo usuario con la imagen de perfil
