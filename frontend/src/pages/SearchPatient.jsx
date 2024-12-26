@@ -59,7 +59,7 @@ const SearchPatient = () => {
         const newStatus = currentStatus === "activo" ? "inactivo" : "activo";
     
         Swal.fire({
-            title: `¿Estás seguro de que deseas ${newStatus === "inactivo" ? "❌ inactivar" : "✅ activar"} este paciente?`,
+            title: `¿Estás seguro de que deseas ${newStatus === "inactivo" ? "inactivar" : "activar"} este paciente?`,
             text: "Puedes cambiar el estado más tarde si lo deseas.",
             icon: "warning",
             showCancelButton: true,
