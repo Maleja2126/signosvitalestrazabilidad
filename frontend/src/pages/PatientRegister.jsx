@@ -55,6 +55,7 @@ const PatientRegister = () => {
         return 'Adulto';
     };
 
+
     const handleFechaNacimientoChange = (date) => {
         if (!date) {
             // Si el usuario borra toda la fecha, limpia los estados relacionados
@@ -192,13 +193,13 @@ const PatientRegister = () => {
     };
 
     return (
-        <div className="flex items-center justify-center h-screen w-screen bg-gray-100 fixed overflow-hidden">
+        <div className="flex items-center justify-center min-h-screen bg-gray-100">
             <form
-                onSubmit={(e) => e.preventDefault()}
+                onSubmit={handleRegister}
                 className="w-full max-w-lg p-8 bg-white rounded-lg shadow-lg my-8"
             >
                 {/* Encabezado */}
-                <h2 className="text-3xl font-bold mb-8 text-center text-blue-700 flex items-center justify-center gap-2">
+                <h2 className="text-3xl font-bold mb-8 text-center text-blue-800 flex items-center justify-center gap-2">
                     <FaClipboard size={25} /> Registrar paciente
                 </h2>
 
