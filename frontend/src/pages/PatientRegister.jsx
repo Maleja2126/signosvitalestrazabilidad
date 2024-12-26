@@ -192,13 +192,13 @@ const PatientRegister = () => {
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="flex items-center justify-center h-screen w-screen bg-gray-100 fixed overflow-hidden">
             <form
-                onSubmit={handleRegister}
+                onSubmit={(e) => e.preventDefault()}
                 className="w-full max-w-lg p-8 bg-white rounded-lg shadow-lg my-8"
             >
                 {/* Encabezado */}
-                <h2 className="text-3xl font-bold mb-8 text-center text-blue-600 flex items-center justify-center gap-2">
+                <h2 className="text-3xl font-bold mb-8 text-center text-blue-700 flex items-center justify-center gap-2">
                     <FaClipboard size={25} /> Registrar paciente
                 </h2>
 
