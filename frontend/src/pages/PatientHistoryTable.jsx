@@ -237,9 +237,10 @@ const PatientHistoryPage = ({ token }) => {
                             </button>
                             <button
                                 onClick={() => {
-                                    setStartDate("");
-                                    setEndDate("");
-                                    setFilteredHistory(history); // Restaura el historial completo
+                                    setStartDate(""); // Limpia el campo de fecha de inicio
+                                    setEndDate("");   // Limpia el campo de fecha de fin
+                                    setSearchId("");  // Limpia el campo de búsqueda por ID
+                                    setFilteredHistory([...history]); // Restaura la tabla con los datos completos
                                 }}
                                 className="px-4 py-2 bg-gray-300 text-gray-700 font-semibold rounded flex items-center space-x-2 hover:bg-gray-400 transition"
                             >

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { getUserInfo, updateProfileImage } from "../services/authService";
-import { FaUpload, FaEdit, FaHome } from "react-icons/fa";
+import { FaUpload, FaEdit, FaHome, FaTimes, FaUser } from "react-icons/fa";
 
 const ProfilePage = () => {
     const [userInfo, setUserInfo] = useState({ username: "", email: "", profile_image: null });
@@ -79,7 +79,7 @@ const ProfilePage = () => {
             {/* Fondo degradado con animación */}
             <div
                 style={{
-                    background: "linear-gradient(135deg, #64b5f6, #42a5f5)", // Gradiente azul
+                    background: "linear-gradient(135deg,rgb(151, 200, 240), #42a5f5)", // Gradiente azul
                     animation: "gradient 6s ease infinite",
                     backgroundSize: "200% 200%",
                     position: "absolute",
@@ -90,7 +90,7 @@ const ProfilePage = () => {
                     zIndex: 0,
                 }}
             ></div>
-    
+
             {/* Animación de fondo */}
             <style>
                 {`
@@ -101,11 +101,11 @@ const ProfilePage = () => {
                     }
                 `}
             </style>
-    
+
             <div
                 style={{
-                    width: "450px",
-                    padding: "30px",
+                    width: "500px", // Ancho modificado para hacer el cuadro más ancho
+                    padding: "15px",
                     borderRadius: "20px",
                     backgroundColor: "#ffffff",
                     boxShadow: "0 15px 35px rgba(0, 0, 0, 0.2)",
@@ -125,7 +125,7 @@ const ProfilePage = () => {
                 >
                     Mi Perfil
                 </h1>
-    
+
                 <div
                     style={{
                         width: "120px",
@@ -151,22 +151,20 @@ const ProfilePage = () => {
                             }}
                             onError={(e) => {
                                 e.target.onerror = null;
-                                e.target.src = "default-avatar.png";
+                                setPreviewImage(null); // Si falla, muestra el ícono predeterminado
                             }}
                         />
                     ) : (
-                        <span
+                        <FaUser
                             style={{
-                                color: "#ffffff",
-                                fontWeight: "700",
-                                fontSize: "20px",
+                                fontSize: "60px", // Tamaño del ícono
+                                color: "white", // Ícono blanco
                             }}
-                        >
-                            User
-                        </span>
+                        />
                     )}
                 </div>
-    
+
+
                 <div
                     style={{
                         marginTop: "15px",
@@ -209,7 +207,7 @@ const ProfilePage = () => {
                             {userInfo.username || "Nombre Usuario"}
                         </p>
                     </div>
-    
+
                     <div
                         style={{
                             width: "100%",
@@ -237,7 +235,7 @@ const ProfilePage = () => {
                             {userInfo.email || "correo@ejemplo.com"}
                         </p>
                     </div>
-    
+
                     <div style={{ width: "100%" }}>
                         <span
                             style={{
@@ -259,7 +257,7 @@ const ProfilePage = () => {
                         </p>
                     </div>
                 </div>
-    
+
                 <div
                     style={{
                         marginTop: "20px",
@@ -268,6 +266,7 @@ const ProfilePage = () => {
                         gap: "15px",
                     }}
                 >
+                    {/* Botón de Subir Foto */}
                     <label
                         htmlFor="fileInput"
                         style={{
@@ -301,7 +300,8 @@ const ProfilePage = () => {
                         onChange={handleFileChange}
                         style={{ display: "none" }}
                     />
-    
+
+                    {/* Botón de Cambiar Foto */}
                     <button
                         onClick={handleSubmit}
                         style={{
@@ -327,7 +327,8 @@ const ProfilePage = () => {
                     >
                         <FaEdit /> Cambiar Foto de Perfil
                     </button>
-    
+
+                    {/* Botón de Volver al Menú */}
                     <button
                         onClick={() => navigate("/dashboard")}
                         style={{
@@ -354,9 +355,10 @@ const ProfilePage = () => {
                         <FaHome /> Volver al Menú
                     </button>
                 </div>
+
             </div>
         </div>
-    );    
+    );
 };
 
 export default ProfilePage;

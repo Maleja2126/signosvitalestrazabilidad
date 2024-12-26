@@ -98,24 +98,24 @@ const SearchUsers = () => {
     };
 
     return (
-        <div className="flex flex-col items-center justify-start min-h-screen bg-white-50 p-6">
+        <div className="flex flex-col items-center justify-start min-h-screen bg-gray-50 p-6">
             <ToastContainer />
-            <h1 className="text-4xl font-bold mb-6 mt-10 text-blue-800">Usuarios Registrados</h1>
+            <h1 className="text-4xl font-bold mb-6 mt-10 text-blue-700">Usuarios Registrados</h1>
             {error && <p className="text-red-500">{error}</p>}
 
             <div className="w-full max-w-7xl overflow-auto mt-4">
-                <div className="bg-white shadow-lg rounded-lg border border-gray-200">
-                    <table className="min-w-full border-collapse rounded-lg">
+                <div className="bg-white shadow-2xl rounded-lg border border-gray-300">
+                    <table className="min-w-full border-collapse rounded-lg overflow-hidden">
                         {/* Cabecera */}
-                        <thead className="bg-gradient-to-r from-blue-700 to-blue-500 text-white">
+                        <thead className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
                             <tr>
-                                <th className="p-4 text-center text-sm font-bold ">Nombre</th>
-                                <th className="p-4 text-center text-sm font-bold ">Cédula</th>
-                                <th className="p-4 text-center text-sm font-bold ">Correo</th>
-                                <th className="p-4 text-center text-sm font-bold ">Rol</th>
-                                <th className="p-4 text-center text-sm font-bold ">Estado</th>
-                                <th className="p-4 text-center text-sm font-bold ">Editar</th>
-                                <th className="p-4 text-center text-sm font-bold ">Acciones</th>
+                                <th className="p-4 text-center text-sm font-semibold tracking-wide ">Nombre</th>
+                                <th className="p-4 text-center text-sm font-semibold tracking-wide ">Cédula</th>
+                                <th className="p-4 text-center text-sm font-semibold tracking-wide ">Correo</th>
+                                <th className="p-4 text-center text-sm font-semibold tracking-wide ">Rol</th>
+                                <th className="p-4 text-center text-sm font-semibold tracking-wide ">Estado</th>
+                                <th className="p-4 text-center text-sm font-semibold tracking-wide ">Editar</th>
+                                <th className="p-4 text-center text-sm font-semibold tracking-wide ">Acciones</th>
                             </tr>
                         </thead>
 
@@ -141,35 +141,39 @@ const SearchUsers = () => {
                                     <td className="p-4 text-center">
                                         <span
                                             onClick={() => navigate(`/edit-user/${user.id}`)}
-                                            className="inline-flex items-center justify-center w-10 h-10 bg-gray-100 rounded-full text-blue-600 hover:text-blue-800 hover:bg-blue-200 transition-transform transform hover:scale-105 cursor-pointer"
+                                            className="inline-flex items-center justify-center w-10 h-10 bg-blue-100 rounded-full text-blue-600 hover:text-blue-800 hover:bg-blue-200 transition-transform transform hover:scale-105 cursor-pointer"
                                             title="Editar usuario"
                                         >
                                             <MdOutlineEdit size={20} />
                                         </span>
                                     </td>
-                                    <td className="p-4 flex justify-center gap-2">
+
+                                    <td className="p-4 flex justify-center gap-3">
+                                        {/* Botón Activar/Desactivar */}
                                         <button
                                             onClick={() => handleToggleStatus(user.id, user.is_active)}
-                                            className={`flex items-center px-4 py-2 text-sm font-bold rounded-lg shadow ${user.is_active
-                                                    ? "bg-gray-600 text-white hover:bg-gray-700"
-                                                    : "bg-green-600 text-white hover:bg-green-700"
+                                            className={`flex items-center px-4 py-2 text-sm font-medium rounded-md shadow-lg transition-all duration-300 ease-in-out ${user.is_active
+                                                    ? "bg-gray-600 text-white hover:bg-gray-900 hover:scale-105"
+                                                    : "bg-green-600 text-white hover:bg-green-700 hover:scale-105"
                                                 }`}
                                         >
                                             {user.is_active ? (
                                                 <>
-                                                    <FiUserX className="mr-2" size={18} /> Desactivar
+                                                    <FiUserX className="mr-2 text-white" size={16} /> Desactivar
                                                 </>
                                             ) : (
                                                 <>
-                                                    <FiUserCheck className="mr-1" size={18} /> Activar
+                                                    <FiUserCheck className="mr-2 text-white" size={16} /> Activar
                                                 </>
                                             )}
                                         </button>
+
+                                        {/* Botón Eliminar */}
                                         <button
                                             onClick={() => handleDeleteUser(user.id)}
-                                            className="flex items-center px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-bold shadow hover:bg-red-700 transition"
+                                            className="flex items-center px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium shadow-lg border border-red-700 hover:bg-red-700 hover:scale-105 transition-all duration-300 ease-in-out"
                                         >
-                                            <FiTrash2 className="mr-2" size={18} /> Eliminar
+                                            <FiTrash2 className="mr-2 text-white" size={16} /> Eliminar
                                         </button>
                                     </td>
                                 </tr>
@@ -181,7 +185,7 @@ const SearchUsers = () => {
 
             <button
                 onClick={() => navigate("/admin-panel")}
-                className="mt-6 flex items-center px-5 py-3 bg-blue-500 text-white font-bold rounded-full shadow-lg hover:bg-blue-600 transition-all"
+                className="mt-6 flex items-center px-5 py-3 bg-gradient-to-r from-blue-600 to-blue-600 text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:from-blue-600 hover:to-blue-700 transition-all"
             >
                 <FiHome className="mr-3" /> Regresar al Panel
             </button>
