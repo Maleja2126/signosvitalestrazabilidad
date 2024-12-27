@@ -37,12 +37,22 @@ const PatientRegister = () => {
         if (!date) return null;
         const birth = new Date(date);
         const today = new Date();
+    
+        // Caso especial para la fecha actual
+        if (
+            birth.getDate() === today.getDate() &&
+            birth.getMonth() === today.getMonth() &&
+            birth.getFullYear() === today.getFullYear()
+        ) {
+            return 0; // Edad en meses es 0 para recién nacidos
+        }
+    
         const ageInMonths =
             (today.getFullYear() - birth.getFullYear()) * 12 +
             (today.getMonth() - birth.getMonth()) -
             (today.getDate() < birth.getDate() ? 1 : 0);
         return ageInMonths;
-    };
+    };    
 
     const calculateAgeGroup = (fechaNacimiento) => {
         const ageInMonths = calculateAgeInMonths(fechaNacimiento);
@@ -55,54 +65,53 @@ const PatientRegister = () => {
         return 'Adulto';
     };
 
-
     const handleFechaNacimientoChange = (date) => {
         if (!date) {
-            // Si el usuario borra toda la fecha, limpia los estados relacionados
             setFechaNacimiento("");
             setEdad(null);
             setAgeGroup("");
             return;
         }
-
-        // Limitar caracteres no válidos y longitud
+    
         const formattedDate = date.replace(/[^0-9\-]/g, "").slice(0, 10); // Asegura formato YYYY-MM-DD
-
-        // Validar si la fecha es futura
         const today = new Date();
         const selectedDate = new Date(formattedDate);
-
+    
         if (selectedDate > today) {
             toast.error("La fecha de nacimiento no puede ser una fecha futura.");
-            setFechaNacimiento(formattedDate); // Mantiene la fecha ingresada en el input
-            setEdad(null); // Limpia el campo de edad
-            setAgeGroup(""); // Limpia el campo de tipo de paciente
-            return; // No calcular nada más
+            setFechaNacimiento(formattedDate);
+            setEdad(null);
+            setAgeGroup("");
+            return;
         }
-
-        // Validar formato de fecha (YYYY-MM-DD)
+    
         const regex = /^\d{4}-\d{2}-\d{2}$/;
         if (regex.test(formattedDate)) {
-            setFechaNacimiento(formattedDate); // Actualiza la fecha solo si es válida
-            const age = calculateAge(formattedDate); // Calcula la edad
-            setEdad(age > 0 ? `${age} años` : null); // Asegura que no se muestren valores negativos
-            const group = calculateAgeGroup(formattedDate); // Calcula el grupo de edad
+            setFechaNacimiento(formattedDate);
+            const ageInMonths = calculateAgeInMonths(formattedDate);
+            if (ageInMonths === 0) {
+                setEdad(`0 meses`); // Recién nacido
+            } else if (ageInMonths < 24) {
+                setEdad(`${ageInMonths} meses`); // Menos de 2 años
+            } else {
+                const age = calculateAge(formattedDate);
+                setEdad(`${age} años`); // Mayor o igual a 2 años
+            }
+            const group = calculateAgeGroup(formattedDate);
             setAgeGroup(group || "No definido");
-
-            // Cambiar automáticamente el tipo de identificación
-            if (age < 18) {
+    
+            if (calculateAge(formattedDate) < 18) {
                 settipoIdentificacion("Tarjeta de Identidad");
             } else {
                 settipoIdentificacion("Cédula de Ciudadanía");
             }
-
         } else {
             toast.error("Ingrese una fecha válida (YYYY-MM-DD).");
             setEdad(null);
             setAgeGroup("");
         }
     };
-
+    
     const handleTipoIdentificacionChange = (e) => {
         settipoIdentificacion(e.target.value);
     };
@@ -169,13 +178,15 @@ const PatientRegister = () => {
         if (!fechaNacimiento) {
             return ""; // No mostrar nada si no hay fecha de nacimiento
         }
-
+    
         const ageInMonths = calculateAgeInMonths(fechaNacimiento);
-
-        if (ageInMonths <= 24) {
-            return `${ageInMonths} meses`;
+    
+        if (ageInMonths === 0) {
+            return `0 meses (Recién nacido)`; // Recién nacido
+        } else if (ageInMonths <= 24) {
+            return `${ageInMonths} meses`; // Edad en meses si es menor a 2 años
         } else {
-            return `${edad} años`;
+            return `${edad}`; // Edad en años
         }
     };
 

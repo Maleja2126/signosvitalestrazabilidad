@@ -189,7 +189,7 @@ const PatientHistoryPage = ({ token }) => {
         }
     };
 
-    const isPediatric = patientInfo && patientInfo.age_group && patientInfo.age_group === "Pediátrico";
+    const isPediatric = patientInfo && patientInfo.age_group !== "Adulto";
 
     if (loading) return <div>Loading...</div>;
     if (error) return <div className="text-red-500">{error}</div>;

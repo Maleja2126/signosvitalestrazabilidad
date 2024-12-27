@@ -93,7 +93,7 @@ const Dashboard = () => {
                     >
                         <FaUserPlus className="text-green-500 text-6xl mb-4 transform hover:scale-110 transition-transform duration-300" />
                         <button
-                            className="mt-4 px-6 py-3 bg-green-600 text-white font-bold rounded-full shadow-lg hover:bg-blue-700 hover:scale-105 transition-all duration-300"
+                            className="mt-4 px-6 py-3 bg-green-600 text-white font-bold rounded-full shadow-lg hover:bg-green-700 hover:scale-105 transition-all duration-300"
                         >
                             Registrar Paciente
                         </button>

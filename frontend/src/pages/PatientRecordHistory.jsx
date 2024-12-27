@@ -102,22 +102,31 @@ const PatientRecordHistory = () => {
 
     // Maneja el cambio de la fecha de nacimiento
     const handleFechaNacimientoChange = (date) => {
+        if (!date) {
+            setEdad(null);
+            setAgeUnit("");
+            setAgeGroup("");
+            return;
+        }
+    
         const ageInYears = calculateAge(date);
         const ageInMonths = calculateAgeInMonths(date);
-
+    
         if (ageInYears >= 1) {
+            // Si la edad es de 1 año o más
             setEdad(ageInYears);
             setAgeUnit("años");
         } else {
+            // Si la edad es menor de 1 año
             setEdad(ageInMonths);
             setAgeUnit("meses");
         }
-
-        // Calcular el grupo de edad
+    
+        // Calcular y establecer el grupo de edad
         const group = calculateAgeGroup(date);
         setAgeGroup(group);
     };
-
+    
     // Cargar los registros del paciente
     const loadPatientRecords = async () => {
         try {
@@ -403,7 +412,7 @@ const PatientRecordHistory = () => {
                             </tr>
                             <tr className="border-b border-gray-200 bg-gray-100">
                                 <td className="font-bold py-3 px-4">Edad:</td>
-                                <td className="py-3 px-4">{edad ? `${edad} ${ageUnit}` : "No disponible"}</td>
+                                <td className="py-3 px-4">{edad !== null ? `${edad} ${ageUnit}` : "No disponible"}</td>
                             </tr>
                             <tr className="border-b border-white-200 bg-white-100">
                                 <td className="font-bold py-3 px-4">Tipo de Paciente:</td>

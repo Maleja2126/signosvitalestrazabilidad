@@ -56,6 +56,24 @@ const PatientDataForm = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Validar campos obligatorios
+    if (
+        (!pesoAdulto && ageGroup === "Adulto") ||
+        (!pesoPediatrico && ageGroup !== "Adulto") ||
+        !talla ||
+        !temperatura ||
+        !presionSistolica ||
+        !presionDiastolica ||
+        !pulso ||
+        !frecuenciaRespiratoria ||
+        !saturacionOxigeno ||
+        !recordDate ||
+        !recordTime
+    ) {
+        toast.error("Por favor, complete todos los campos.");
+        return;
+    }
         const token = localStorage.getItem("token");
 
         if (!token) {
@@ -139,7 +157,6 @@ const PatientDataForm = () => {
                                 setPesoPediatrico(e.target.value);
                                 if (e.target.value) setPesoAdulto("");
                             }}
-                            required
                             disabled={pesoAdulto !== ""}
                             className={`w-full p-2 border ${
                                 pesoAdulto !== "" ? "bg-gray-200" : "border-gray-300"
@@ -170,7 +187,6 @@ const PatientDataForm = () => {
                         type="number"
                         value={talla}
                         onChange={(e) => setTalla(e.target.value)}
-                        required
                         className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
                     />
                 </div>
