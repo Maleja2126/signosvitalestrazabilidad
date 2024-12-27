@@ -70,7 +70,7 @@ exports.register = async (req, res) => {
                 to: email,
                 subject: "Bienvenido al sistema de gestion de pacientes",
                 html: `<p>Hola ${username},</p>
-                       <p>¡Bienvenido/a! Tu cuenta se ha creado correctamente con el rol de ${role} de enfermería.</p>
+                       <p>¡Bienvenido/a! Tu cuenta se ha creado correctamente con el rol de ${role}.</p>
                        <p>Gracias por registrarte con nosotros.</p>`
             });
 
