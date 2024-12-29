@@ -198,6 +198,43 @@ exports.updatePassword = async (req, res) => {
     }
 };
 
+// Función para cambiar la contraseña de un usuario autenticado
+exports.ChangePasswordAuthenticated = async (req, res) => {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user.id;  // Suponiendo que la información del usuario está disponible en req.user
+
+    try {
+        // Obtener el usuario de la base de datos
+        const [rows] = await db.query(
+            "SELECT id, password FROM users WHERE id = ?",
+            [userId]
+        );
+
+        if (rows.length === 0) {
+            return res.status(404).json({ message: "Usuario no encontrado" });
+        }
+
+        const user = rows[0];
+
+        // Verificar si la contraseña actual es correcta
+        const isValidPassword = await bcrypt.compare(currentPassword, user.password);
+
+        if (!isValidPassword) {
+            return res.status(401).json({ message: "La contraseña actual es incorrecta" });
+        }
+
+        // Encriptar la nueva contraseña
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // Actualizar la contraseña en la base de datos
+        await db.query("UPDATE users SET password = ? WHERE id = ?", [hashedPassword, userId]);
+
+        res.status(200).json({ message: "Contraseña cambiada exitosamente" });
+    } catch (error) {
+        console.error('Error al cambiar la contraseña:', error);
+        res.status(500).json({ message: "Error en el servidor" });
+    }
+};
 
 exports.getUserInfo = async (req, res) => {
     try {
