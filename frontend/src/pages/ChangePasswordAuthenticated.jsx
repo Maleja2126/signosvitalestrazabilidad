@@ -41,15 +41,15 @@ const ChangePassword = () => {
             return;
         }
     
+        // Verificar que se haya ingresado la contraseña actual
+        if (!currentPassword) {
+            setError("Debes ingresar tu contraseña actual.");
+            return;
+        }
+    
         try {
             // Llamada a la función para actualizar la contraseña autenticada
             const response = await changePasswordAuthenticated(currentPassword, newPassword);
-    
-            // Asegúrate de que la respuesta del servidor esté siendo manejada correctamente
-            if (response.error && response.error === 'incorrectPassword') {
-                setError("La contraseña actual no es correcta.");
-                return;
-            }
     
             // Si la contraseña actual es correcta y la nueva se actualiza
             toast.success("Contraseña actualizada exitosamente!");
@@ -59,7 +59,13 @@ const ChangePassword = () => {
             console.error("Error al actualizar la contraseña:", err);  // Para depuración
     
             // Si el error es por un fallo general (por ejemplo, servidor no disponible)
-            setError("Hubo un error al actualizar la contraseña. Intenta nuevamente.");
+            if (err.response && err.response.status === 401) {
+                setError("La contraseña actual no es correcta.");
+            } else {
+                setError("Hubo un error al actualizar la contraseña. Intenta nuevamente.");
+            }
+    
+            // Mostrar un error en el toast
             toast.error("Hubo un error al actualizar la contraseña.");
         }
     };
