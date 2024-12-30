@@ -309,7 +309,7 @@ const SearchPatient = () => {
                         <th className="p-4">Número de identificación</th>
                         <th className="p-4">Ubicación</th>
                         <th className="p-4">Estado</th>
-                        {role === "jefe" && <th className="p-1">Responsable</th>}                        <th className="p-4">Editar</th>
+                        {role === "jefe" && <th className="p-1">Responsable</th>} <th className="p-4">Editar</th>
                         <th className="p-4">Seleccionar</th>
                     </tr>
                 </thead>
