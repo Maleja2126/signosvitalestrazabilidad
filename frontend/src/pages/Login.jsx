@@ -34,11 +34,21 @@ const Login = () => {
 
         try {
             const response = await login(numeroIdentificacion, password);
-            localStorage.setItem("token", response.data.token);
-            localStorage.setItem("role", response.data.role);
-            localStorage.setItem("numero_identificacion", response.data.numero_identificacion);
+            const { token, role, numero_identificacion } = response.data;
+    
+            // Guardar datos en localStorage
+            localStorage.setItem("token", token);
+            localStorage.setItem("role", role);
+            localStorage.setItem("numero_identificacion", numero_identificacion);
+    
             toast.success("Inicio de sesión exitoso!");
-            navigate("/dashboard");
+    
+            // Redirigir según el rol
+            if (role === "jefe") {
+                navigate("/admin-panel"); // Ruta del panel de administración
+            } else {
+                navigate("/dashboard"); // Ruta estándar del dashboard
+            }
         } catch (err) {
             console.error("Error al iniciar sesión", err);
             if (err.response && err.response.status === 403) {

@@ -65,7 +65,7 @@ const ChangePassword = () => {
     
             {/* Formulario */}
             <div className="w-full max-w-md p-8 bg-white rounded-3xl shadow-2xl relative z-10">
-                <h2 className="text-center text-3xl font-bold mb-6 text-blue-600">Cambiar contraseña</h2>
+                <h2 className="text-center text-3xl font-bold mb-6 text-blue-600">Restablecer contraseña</h2>
     
                 {/* Campo para la nueva contraseña */}
                 <div className="mb-4">

@@ -1,14 +1,6 @@
 import { useEffect, useState } from "react";
 import { fetchTrazabilidad } from "../services/trazabilidadService";
-import {
-  FaSearch,
-  FaInfoCircle,
-  FaCheck,
-  FaTimes,
-  FaFileExport,
-  FaListAlt,
-  FaFilter,
-} from "react-icons/fa";
+import { FaSearch, FaInfoCircle, FaCheck, FaTimes, FaFileExport, FaListAlt, FaFilter,} from "react-icons/fa";
 import { FiHome } from "react-icons/fi";
 import DetalleTrazabilidadModal from "../components/DetalleTrazabilidadModal";
 import generatePDFTrazabilidad from "../services/generatePDFTrazabilidad";

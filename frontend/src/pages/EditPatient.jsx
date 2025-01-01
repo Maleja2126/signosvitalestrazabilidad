@@ -183,7 +183,7 @@ const EditPatient = () => {
                         {/* Primer Nombre */}
                         <div className="flex flex-col">
                             <label htmlFor="primerNombre" className="text-sm font-semibold mb-1">
-                                Primer nombre
+                                Primer nombre <span className="text-red-500">*</span>
                             </label>
                             <input
                                 id="primerNombre"
@@ -211,7 +211,7 @@ const EditPatient = () => {
                         {/* Primer Apellido */}
                         <div className="flex flex-col">
                             <label htmlFor="primerApellido" className="text-sm font-semibold mb-1">
-                                Primer apellido
+                                Primer apellido <span className="text-red-500">*</span>
                             </label>
                             <input
                                 id="primerApellido"
@@ -225,7 +225,7 @@ const EditPatient = () => {
                         {/* Segundo Apellido */}
                         <div className="flex flex-col">
                             <label htmlFor="segundoApellido" className="text-sm font-semibold mb-1">
-                                Segundo apellido
+                                Segundo apellido <span className="text-red-500">*</span>
                             </label>
                             <input
                                 id="segundoApellido"
@@ -239,7 +239,7 @@ const EditPatient = () => {
                         {/* Tipo de Identificación */}
                         <div className="flex flex-col">
                             <label htmlFor="tipoIdentificacion" className="text-sm font-semibold mb-1">
-                                Tipo de identificación
+                                Tipo de identificación 
                             </label>
                             <select
                                 id="tipoIdentificacion"
@@ -255,7 +255,7 @@ const EditPatient = () => {
                         {/* Número de Identificación */}
                         <div className="flex flex-col">
                             <label htmlFor="numeroIdentificacion" className="text-sm font-semibold mb-1">
-                                Número de identificación
+                                Número de identificación <span className="text-red-500">*</span>
                             </label>
                             <input
                                 id="numeroIdentificacion"
@@ -269,7 +269,7 @@ const EditPatient = () => {
                         {/* Fecha de Nacimiento */}
                         <div className="flex flex-col">
                             <label htmlFor="fechaNacimiento" className="text-sm font-semibold mb-1">
-                                Fecha de nacimiento
+                                Fecha de nacimiento <span className="text-red-500">*</span>
                             </label>
                             <input
                                 id="fechaNacimiento"
@@ -283,7 +283,7 @@ const EditPatient = () => {
                         {/* Ubicación */}
                         <div className="flex flex-col">
                             <label htmlFor="ubicacion" className="text-sm font-semibold mb-1">
-                                Ubicación (habitación)
+                                Ubicación (habitación) <span className="text-red-500">*</span>
                             </label>
                             <input
                                 id="ubicacion"

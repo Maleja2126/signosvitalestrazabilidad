@@ -244,7 +244,7 @@ const SearchPatient = () => {
     };
 
     return (
-        <div className="flex flex-col items-center min-h-screen bg-gray-50 p-8">
+        <div className="flex flex-col items-center min-h-screen bg-white-50 p-8">
             <h1 className="text-4xl font-bold text-blue-600 mt-10 mb-6">Búsqueda de Pacientes</h1>
 
             {/* Barra de búsqueda */}
@@ -405,7 +405,7 @@ const SearchPatient = () => {
                 >
                     <BiSolidSpreadsheet className="mr-3" />
                     Ir a registros
-                </button>
+                </button>   
             </div>
         </div>
     );
